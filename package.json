@@ -21,7 +21,7 @@
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.3",
     "vite": "^4.4.5",
-    "react-snap": "^3.0.0"
+    "react-snap": "1.23.0"
   },
   "react-snap": {
     "source": "dist",
