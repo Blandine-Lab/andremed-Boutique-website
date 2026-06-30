@@ -200,60 +200,62 @@ function Home() {
   };
 
   // ========== NEWSLETTER : ENVOI GROUPÉ (ADMIN) ==========
-  const handleBulkSend = async () => {
-    if (adminPassword !== 'admin123') {
-      setBulkStatus('❌ Mot de passe administrateur incorrect.');
-      return;
-    }
-    if (!bulkSubject.trim() || !bulkMessage.trim()) {
-      setBulkStatus('❌ Veuillez remplir le sujet et le message.');
-      return;
-    }
-    if (subscribedEmails.length === 0) {
-      setBulkStatus('❌ Aucun abonné à la newsletter.');
-      return;
-    }
-    setBulkSending(true);
-    setBulkStatus(`📧 Envoi en cours à ${subscribedEmails.length} abonné(s)...`);
-    try {
-      const response = await fetch('https://andremed-email-backend.onrender.com/api/send-emails', {
+const handleBulkSend = async () => {
+  // Utilisation de la variable d'environnement pour l'URL du backend
+  const backendUrl = import.meta.env.VITE_NEWSLETTER_BACKEND_URL || 'https://andremed-email-backend.onrender.com/api/send-emails';
+
+  if (adminPassword.trim() !== '@M@thurkayo219901990@@@@1') {
+    setBulkStatus('❌ Mot de passe administrateur incorrect.');
+    return;
+  }
+  if (!bulkSubject.trim() || !bulkMessage.trim()) {
+    setBulkStatus('❌ Veuillez remplir le sujet et le message.');
+    return;
+  }
+  if (subscribedEmails.length === 0) {
+    setBulkStatus('❌ Aucun abonné à la newsletter.');
+    return;
+  }
+  setBulkSending(true);
+  setBulkStatus(`📧 Envoi en cours à ${subscribedEmails.length} abonné(s)...`);
+  try {
+    const response = await fetch(backendUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipients: subscribedEmails,
+        subject: bulkSubject,
+        message: bulkMessage,
+        adminPassword: adminPassword,
+      }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      setBulkStatus(`✅ Terminé : ${data.successCount} succès, ${data.failCount} échecs.`);
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipients: subscribedEmails,
-          subject: bulkSubject,
-          message: bulkMessage,
-          adminPassword: adminPassword,
-        }),
+          chat_id: GROUP_CHAT_ID,
+          text: `📢 Envoi groupé via Brevo : ${data.successCount} destinataires. Sujet : "${bulkSubject}"`
+        })
       });
-      const data = await response.json();
-      if (data.success) {
-        setBulkStatus(`✅ Terminé : ${data.successCount} succès, ${data.failCount} échecs.`);
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: GROUP_CHAT_ID,
-            text: `📢 Envoi groupé via Brevo : ${data.successCount} destinataires. Sujet : "${bulkSubject}"`
-          })
-        });
-      } else {
-        setBulkStatus(`❌ Erreur serveur : ${data.error}`);
-      }
-    } catch (error) {
-      console.error(error);
-      setBulkStatus(`❌ Impossible de contacter le serveur backend.`);
+    } else {
+      setBulkStatus(`❌ Erreur serveur : ${data.error}`);
     }
-    setBulkSending(false);
-    setTimeout(() => {
-      setShowBulkModal(false);
-      setBulkSubject('');
-      setBulkMessage('');
-      setAdminPassword('');
-      setBulkStatus('');
-    }, 4000);
-  };
-
+  } catch (error) {
+    console.error(error);
+    setBulkStatus(`❌ Impossible de contacter le serveur backend.`);
+  }
+  setBulkSending(false);
+  setTimeout(() => {
+    setShowBulkModal(false);
+    setBulkSubject('');
+    setBulkMessage('');
+    setAdminPassword('');
+    setBulkStatus('');
+  }, 4000);
+};
   // ========== SOUTIEN ==========
   const sendSupportToTelegram = async (formData) => {
     const typeLabel = formData.type === 'don' ? '💝 Don' : formData.type === 'partenariat' ? '🤝 Partenariat' : '📝 Autre';
