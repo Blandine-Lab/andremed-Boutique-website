@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://andremed-email-backend.onrender.com/sitemap.xml
