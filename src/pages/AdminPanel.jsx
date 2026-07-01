@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import emailjs from '@emailjs/browser'; // ✅ Import EmailJS
+// ✅ Initialisation de la clé publique EmailJS
+emailjs.init(import.meta.env.VITE_EMAILJS_USER_ID);
 
 function AdminPanel() {
   const [authenticated, setAuthenticated] = useState(false);
