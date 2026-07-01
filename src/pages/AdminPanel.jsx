@@ -110,7 +110,7 @@ function AdminPanel() {
       comment: comment || '',
       account_link: `${window.location.origin}/account`,
       from_name: 'Andremed Medical',
-      from_email: 'andre.misumi@outlook.fr'  // ← adresse déjà vérifiée dans Brevo
+      from_email: 'contact@andremed.org'  // ← adresse déjà vérifiée dans Brevo
     };
 
     try {
