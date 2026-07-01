@@ -109,6 +109,8 @@ function AdminPanel() {
       status: statusLabel,
       comment: comment || '',
       account_link: `${window.location.origin}/account`
+      from_name: 'Andremed Medical',
+      from_email: 'contact@andremed.org'
     };
 
     try {
