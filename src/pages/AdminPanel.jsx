@@ -108,9 +108,9 @@ function AdminPanel() {
       order_number: order.order_number || 'N/A',
       status: statusLabel,
       comment: comment || '',
-      account_link: `${window.location.origin}/account`
+      account_link: `${window.location.origin}/account`,
       from_name: 'Andremed Medical',
-      from_email: 'contact@andremed.org'
+      from_email: 'andre.misumi@outlook.fr'  // ← adresse déjà vérifiée dans Brevo
     };
 
     try {
