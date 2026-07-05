@@ -283,6 +283,8 @@ function AdminPanel() {
       is_promotion: false,
       active: true,
       rating: 0,
+      slug: '',
+      shop_id: null,
       created_at: new Date().toISOString()
     };
     setProducts([...products, newProduct]);
@@ -305,33 +307,36 @@ function AdminPanel() {
   const saveProducts = async () => {
     try {
       for (const p of products) {
-        const toUpsert = { ...p };
-        // Supprimer l'id temporaire si c'est un nouveau produit
-        if (toUpsert.id > 1000000000000) {
-          delete toUpsert.id;
+        // ✅ Ne garder que les colonnes qui existent
+        const toUpsert = {
+          name: p.name || 'Produit sans nom',
+          category: p.category || '',
+          description: p.description || '',
+          brand: p.brand || '',
+          price: p.price || 0,
+          old_price: p.old_price || null,
+          promotion_price: p.promotion_price || null,
+          quantity: p.quantity || 0,
+          stock: p.stock || 0,
+          unit: p.unit || 'pièce',
+          seuil_alerte: p.seuil_alerte || 10,
+          image: p.image || '',
+          image_url: p.image_url || '',
+          media: p.media || [],
+          features: p.features || [],
+          is_new: p.is_new || false,
+          is_promotion: p.is_promotion || false,
+          active: p.active !== false,
+          rating: p.rating || 0,
+          slug: p.slug || '',
+          shop_id: p.shop_id || null,
+          created_at: p.created_at || new Date().toISOString()
+        };
+        
+        // Si c'est un produit existant (id < 1000000000000), inclure l'id
+        if (p.id && p.id < 1000000000000) {
+          toUpsert.id = p.id;
         }
-        
-        // S'assurer que les champs obligatoires ont des valeurs
-        if (!toUpsert.name) toUpsert.name = 'Produit sans nom';
-        if (!toUpsert.category) toUpsert.category = '';
-        if (!toUpsert.description) toUpsert.description = '';
-        if (!toUpsert.brand) toUpsert.brand = '';
-        if (!toUpsert.unit) toUpsert.unit = 'pièce';
-        
-        // Gérer les valeurs numériques
-        if (toUpsert.quantity === undefined || toUpsert.quantity === null) toUpsert.quantity = 0;
-        if (toUpsert.stock === undefined || toUpsert.stock === null) toUpsert.stock = 0;
-        if (toUpsert.price === undefined || toUpsert.price === null) toUpsert.price = 0;
-        if (toUpsert.old_price === '' || toUpsert.old_price === null) toUpsert.old_price = null;
-        if (toUpsert.promotion_price === '' || toUpsert.promotion_price === null) toUpsert.promotion_price = null;
-        if (toUpsert.rating === undefined || toUpsert.rating === null) toUpsert.rating = 0;
-        
-        // ✅ SUPPRIMER LES COLONNES QUI N'EXISTENT PAS
-        delete toUpsert.delivery;
-        delete toUpsert.warranty;
-        delete toUpsert.oldPrice;
-        delete toUpsert.featured;
-        delete toUpsert.slug;
         
         const { data, error } = await supabase
           .from('products')
