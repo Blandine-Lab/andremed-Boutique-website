@@ -304,57 +304,68 @@ function AdminPanel() {
     setProducts(products.filter((_, i) => i !== idx));
   };
   
+  // ========== VERSION MODIFIÉE DE saveProducts (avec logs et conversions) ==========
   const saveProducts = async () => {
+    console.log('🔄 Début de la sauvegarde des produits');
+    console.log('📋 État actuel des produits (products):', products);
+
     try {
       for (const p of products) {
-        // ✅ Ne garder que les colonnes qui existent
+        // 1. Préparation des données avec conversion de type
         const toUpsert = {
           name: p.name || 'Produit sans nom',
           category: p.category || '',
           description: p.description || '',
           brand: p.brand || '',
-          price: p.price || 0,
-          old_price: p.old_price || null,
-          promotion_price: p.promotion_price || null,
-          quantity: p.quantity || 0,
-          stock: p.stock || 0,
+          // Conversion en nombre pour les champs numériques
+          price: Number(p.price) || 0,
+          old_price: p.old_price !== undefined && p.old_price !== '' ? Number(p.old_price) : null,
+          promotion_price: p.promotion_price !== undefined && p.promotion_price !== '' ? Number(p.promotion_price) : null,
+          quantity: Number(p.quantity) || 0,
+          stock: Number(p.stock) || 0,
           unit: p.unit || 'pièce',
-          seuil_alerte: p.seuil_alerte || 10,
+          seuil_alerte: Number(p.seuil_alerte) || 10,
           image: p.image || '',
           image_url: p.image_url || '',
-          media: p.media || [],
-          features: p.features || [],
-          is_new: p.is_new || false,
-          is_promotion: p.is_promotion || false,
+          media: Array.isArray(p.media) ? p.media : [],
+          features: Array.isArray(p.features) ? p.features : [],
+          is_new: Boolean(p.is_new),
+          is_promotion: Boolean(p.is_promotion),
           active: p.active !== false,
-          rating: p.rating || 0,
+          rating: Number(p.rating) || 0,
           slug: p.slug || '',
-          shop_id: p.shop_id || null,
+          shop_id: p.shop_id !== undefined && p.shop_id !== '' ? Number(p.shop_id) : null,
           created_at: p.created_at || new Date().toISOString()
         };
-        
-        // Si c'est un produit existant (id < 1000000000000), inclure l'id
-        if (p.id && p.id < 1000000000000) {
+
+        // 2. Si le produit existe déjà (id < 1000000000000), on inclut son id
+        if (p.id && typeof p.id === 'number' && p.id < 1000000000000) {
           toUpsert.id = p.id;
         }
-        
+
+        // 3. LOG CRUCIAL : on affiche l'objet complet envoyé
+        console.log(`📤 Envoi du produit "${p.name || 'sans nom'}" (ID: ${p.id || 'nouveau'}) :`, toUpsert);
+
+        // 4. Appel Supabase
         const { data, error } = await supabase
           .from('products')
           .upsert(toUpsert)
           .select();
-          
+
+        // 5. Gestion de la réponse
         if (error) {
-          console.error('Erreur lors de la sauvegarde du produit:', error);
+          console.error(`❌ Erreur Supabase pour "${p.name}":`, error);
           alert(`❌ Erreur lors de la sauvegarde du produit "${p.name}": ${error.message}`);
         } else {
-          console.log('✅ Produit sauvegardé avec succès:', data);
+          console.log(`✅ Produit "${p.name}" sauvegardé avec succès :`, data);
         }
       }
+
       alert('✅ Tous les produits ont été sauvegardés avec succès !');
       await loadAllData();
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde des produits:', error);
-      alert('❌ Erreur lors de la sauvegarde des produits. Vérifiez la console pour plus de détails.');
+      console.error('💥 Erreur inattendue lors de la sauvegarde:', error);
+      alert('❌ Une erreur inattendue est survenue. Voir la console pour plus de détails.');
     }
   };
 
