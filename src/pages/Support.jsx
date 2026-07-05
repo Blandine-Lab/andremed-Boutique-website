@@ -424,7 +424,7 @@ function Support() {
         </div>
       </section>
 
-      {/* ✅ Section FAQ dynamique */}
+      {/* ✅ Section FAQ dynamique depuis Supabase */}
       <section style={styles.faqSection}>
         <h2 style={styles.sectionTitle}>❓ Questions Fréquentes</h2>
         <p style={styles.sectionSubtitle}>Trouvez rapidement des réponses à vos questions</p>
@@ -555,7 +555,7 @@ function Support() {
   );
 }
 
-// ========== STYLES (inchangés) ==========
+// ========== STYLES ==========
 const styles = {
   container: { minHeight: '100vh', background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)', paddingTop: '80px' },
   hero: { background: 'linear-gradient(135deg, #0A4D8C 0%, #00A3B2 100%)', color: 'white', padding: '80px 20px', textAlign: 'center' },
