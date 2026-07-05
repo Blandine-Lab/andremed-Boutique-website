@@ -28,8 +28,14 @@ function ProductDetails() {
         if (!data) throw new Error('Produit non trouvé');
 
         setProduct(data);
-        // Définir l'image principale
-        const mainImage = data.image || (data.media && data.media.length > 0 ? data.media[0] : null);
+
+        // ===== Extraire l'image principale =====
+        let mainImage = data.image;
+        if (!mainImage && data.media && data.media.length > 0) {
+          // Si media est un tableau d'objets, prendre le premier .url
+          const firstMedia = data.media[0];
+          mainImage = typeof firstMedia === 'string' ? firstMedia : firstMedia?.url || null;
+        }
         setSelectedImage(mainImage);
       } catch (err) {
         console.error(err);
@@ -42,19 +48,26 @@ function ProductDetails() {
     if (id) fetchProduct();
   }, [id]);
 
-  // Obtenir la liste des images (média ou une seule image)
-  const getImages = () => {
+  // ===== Obtenir la liste des URLs d'images =====
+  const getImageUrls = () => {
     if (!product) return [];
+
     if (product.media && Array.isArray(product.media) && product.media.length > 0) {
-      return product.media;
+      // Extraire les URLs, qu'elles soient sous forme d'objets ou de chaînes
+      return product.media.map(item => {
+        if (typeof item === 'string') return item;
+        return item?.url || null;
+      }).filter(Boolean); // enlever les null/undefined
     }
+
     if (product.image) {
       return [product.image];
     }
+
     return [];
   };
 
-  const images = getImages();
+  const imageUrls = getImageUrls();
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
@@ -105,18 +118,18 @@ function ProductDetails() {
             <div style={styles.zoomHint}>🔍 Cliquer pour zoomer</div>
           </div>
 
-          {images.length > 1 && (
+          {imageUrls.length > 1 && (
             <div style={styles.thumbnails}>
-              {images.map((img, idx) => (
+              {imageUrls.map((url, idx) => (
                 <img
                   key={idx}
-                  src={img}
+                  src={url}
                   alt={`${product.name} - ${idx+1}`}
                   style={{
                     ...styles.thumbnail,
-                    border: selectedImage === img ? '3px solid #0A4D8C' : '1px solid #ddd'
+                    border: selectedImage === url ? '3px solid #0A4D8C' : '1px solid #ddd'
                   }}
-                  onClick={() => setSelectedImage(img)}
+                  onClick={() => setSelectedImage(url)}
                   onError={(e) => { e.target.src = '/placeholder.png'; }}
                 />
               ))}
@@ -192,7 +205,7 @@ function ProductDetails() {
   );
 }
 
-// ========== STYLES ==========
+// ========== STYLES (inchangés) ==========
 const styles = {
   container: {
     maxWidth: '1200px',
@@ -353,7 +366,6 @@ const styles = {
     fontSize: '0.85rem',
     color: '#6C757D',
   },
-  // ===== MODALE ZOOM =====
   modalOverlay: {
     position: 'fixed',
     top: 0,
