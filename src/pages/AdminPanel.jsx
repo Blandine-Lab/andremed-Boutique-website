@@ -268,18 +268,22 @@ function AdminPanel() {
       category: '',
       description: '',
       brand: '',
-      warranty: '',
-      delivery: '',
-      quantity: 0,
       price: 0,
-      oldPrice: null,
+      old_price: null,
+      promotion_price: null,
+      quantity: 0,
+      stock: 0,
       unit: 'pièce',
       seuil_alerte: 10,
       image: '',
+      image_url: '',
       media: [],
+      features: [],
       is_new: false,
-      featured: false,
+      is_promotion: false,
       active: true,
+      rating: 0,
+      slug: '',
       created_at: new Date().toISOString()
     };
     setProducts([...products, newProduct]);
@@ -307,15 +311,35 @@ function AdminPanel() {
         if (toUpsert.id > 1000000000000) {
           delete toUpsert.id;
         }
+        
         // S'assurer que les champs obligatoires ont des valeurs
         if (!toUpsert.name) toUpsert.name = 'Produit sans nom';
-        if (!toUpsert.description) toUpsert.description = '';
         if (!toUpsert.category) toUpsert.category = '';
+        if (!toUpsert.description) toUpsert.description = '';
         if (!toUpsert.brand) toUpsert.brand = '';
-        if (!toUpsert.warranty) toUpsert.warranty = '';
-        if (!toUpsert.delivery) toUpsert.delivery = '';
         if (!toUpsert.unit) toUpsert.unit = 'pièce';
-        if (toUpsert.oldPrice === '' || toUpsert.oldPrice === null) toUpsert.oldPrice = null;
+        if (!toUpsert.slug && toUpsert.name) {
+          toUpsert.slug = toUpsert.name
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+        }
+        
+        // Gérer les valeurs numériques
+        if (toUpsert.quantity === undefined || toUpsert.quantity === null) toUpsert.quantity = 0;
+        if (toUpsert.stock === undefined || toUpsert.stock === null) toUpsert.stock = 0;
+        if (toUpsert.price === undefined || toUpsert.price === null) toUpsert.price = 0;
+        if (toUpsert.old_price === '' || toUpsert.old_price === null) toUpsert.old_price = null;
+        if (toUpsert.promotion_price === '' || toUpsert.promotion_price === null) toUpsert.promotion_price = null;
+        if (toUpsert.rating === undefined || toUpsert.rating === null) toUpsert.rating = 0;
+        
+        // Supprimer les colonnes qui n'existent pas dans la table
+        delete toUpsert.delivery;
+        delete toUpsert.warranty;
+        delete toUpsert.oldPrice;
+        delete toUpsert.featured;
         
         const { data, error } = await supabase
           .from('products')
@@ -324,9 +348,9 @@ function AdminPanel() {
           
         if (error) {
           console.error('Erreur lors de la sauvegarde du produit:', error);
-          alert(`Erreur lors de la sauvegarde du produit "${p.name}": ${error.message}`);
+          alert(`❌ Erreur lors de la sauvegarde du produit "${p.name}": ${error.message}`);
         } else {
-          console.log('Produit sauvegardé avec succès:', data);
+          console.log('✅ Produit sauvegardé avec succès:', data);
         }
       }
       alert('✅ Tous les produits ont été sauvegardés avec succès !');
@@ -984,7 +1008,7 @@ function AdminPanel() {
         </section>
       )}
 
-      {/* ================= ONGLET PRODUITS ================= */}
+      {/* ================= ONGLET PRODUITS (CORRIGÉ) ================= */}
       {activeTab === 'products' && (
         <section style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
           <h2>📦 Produits</h2>
@@ -1027,13 +1051,13 @@ function AdminPanel() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🏷️ Ancien prix (€) - optionnel</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🏷️ Ancien prix (€)</label>
                   <input
-                    placeholder="Ancien prix (pour promo)"
+                    placeholder="Ancien prix"
                     type="number"
                     step="0.01"
-                    value={p.oldPrice || ''}
-                    onChange={(e) => updateProduct(idx, 'oldPrice', parseFloat(e.target.value) || null)}
+                    value={p.old_price || ''}
+                    onChange={(e) => updateProduct(idx, 'old_price', parseFloat(e.target.value) || null)}
                     style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
@@ -1063,7 +1087,7 @@ function AdminPanel() {
 
               {/* Description */}
               <div style={{ marginTop: '10px' }}>
-                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>📝 Description *</label>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>📝 Description</label>
                 <textarea
                   placeholder="Description détaillée du produit..."
                   rows="4"
@@ -1074,7 +1098,7 @@ function AdminPanel() {
               </div>
 
               {/* Informations supplémentaires */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '10px' }}>
                 <div>
                   <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🏷️ Marque</label>
                   <input
@@ -1085,20 +1109,15 @@ function AdminPanel() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🛡️ Garantie</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>⭐ Note</label>
                   <input
-                    placeholder="Garantie (ex: 2 ans)"
-                    value={p.warranty || ''}
-                    onChange={(e) => updateProduct(idx, 'warranty', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🚚 Délai de livraison</label>
-                  <input
-                    placeholder="Délai de livraison"
-                    value={p.delivery || ''}
-                    onChange={(e) => updateProduct(idx, 'delivery', e.target.value)}
+                    placeholder="Note (ex: 4.5)"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    value={p.rating || 0}
+                    onChange={(e) => updateProduct(idx, 'rating', parseFloat(e.target.value) || 0)}
                     style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
@@ -1109,8 +1128,11 @@ function AdminPanel() {
                 <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🖼️ Image principale</label>
                 <UploadField
                   label="Image principale"
-                  value={p.image}
-                  onValueChange={(url) => updateProduct(idx, 'image', url)}
+                  value={p.image || p.image_url || ''}
+                  onValueChange={(url) => {
+                    updateProduct(idx, 'image', url);
+                    updateProduct(idx, 'image_url', url);
+                  }}
                   folder="products"
                 />
               </div>
@@ -1174,6 +1196,21 @@ function AdminPanel() {
                 </p>
               </div>
 
+              {/* Caractéristiques */}
+              <div style={{ marginTop: '10px' }}>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🔧 Caractéristiques (une par ligne)</label>
+                <textarea
+                  placeholder="Caractéristiques du produit (une par ligne)..."
+                  rows="3"
+                  value={Array.isArray(p.features) ? p.features.join('\n') : ''}
+                  onChange={(e) => {
+                    const features = e.target.value.split('\n').filter(f => f.trim() !== '');
+                    updateProduct(idx, 'features', features);
+                  }}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontFamily: 'inherit' }}
+                />
+              </div>
+
               {/* Options */}
               <div style={{ marginTop: '12px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
@@ -1189,11 +1226,11 @@ function AdminPanel() {
                 <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
-                    checked={p.featured || false}
-                    onChange={(e) => updateProduct(idx, 'featured', e.target.checked)}
+                    checked={p.is_promotion || false}
+                    onChange={(e) => updateProduct(idx, 'is_promotion', e.target.checked)}
                   />
-                  <span style={{ color: p.featured ? '#FF9800' : '#666' }}>
-                    {p.featured ? '⭐ Produit vedette' : 'Produit vedette'}
+                  <span style={{ color: p.is_promotion ? '#B41E1E' : '#666' }}>
+                    {p.is_promotion ? '🔥 En promotion' : 'Promotion'}
                   </span>
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
