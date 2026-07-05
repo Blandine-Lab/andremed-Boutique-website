@@ -188,7 +188,7 @@ function Blog() {
           </div>
         </div>
         <div style={styles.footerBottom}>
-          Copyright © 2025 | Powered by Maya Medical
+          Copyright © 2017 | Powered by Andremed Medical
         </div>
       </footer>
     </div>
