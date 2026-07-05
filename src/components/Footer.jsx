@@ -234,7 +234,7 @@ const footerStyles = {
     alignItems: 'center',
     gap: '8px',
     marginBottom: '10px',
-    fontSize: '0.9rem', // ✅ Taille augmentée
+    fontSize: '0.7rem', // ✅ Taille augmentée
     fontFamily: 'Arial, Helvetica, sans-serif', // ✅ Police plus lisible
     padding: '4px 0'
   },
