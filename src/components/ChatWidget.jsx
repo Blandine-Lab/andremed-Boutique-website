@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
-// ✅ URL du backend
-const API_URL = import.meta.env.VITE_API_URL || 'https://andremed-email-backend.onrender.com/api';
+// ✅ URL du backend (à adapter selon votre hébergement)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const ChatWidget = ({ productId, productName, onClose }) => {
   const [messages, setMessages] = useState([]);
