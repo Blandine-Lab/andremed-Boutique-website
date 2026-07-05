@@ -23,12 +23,12 @@ function Footer() {
   }, []);
 
   return (
-    <footer className="custom-footer" style={styles.footer}>
-      <div style={styles.footerContainer}>
+    <footer className="custom-footer" style={footerStyles.footer}>
+      <div style={footerStyles.footerContainer}>
         {/* Colonne 1 - About Us */}
-        <div style={styles.footerColumn}>
-          <h3 style={styles.footerTitle}>About Us</h3>
-          <ul style={styles.footerList}>
+        <div style={footerStyles.footerColumn}>
+          <h3 style={footerStyles.footerTitle}>About Us</h3>
+          <ul style={footerStyles.footerList}>
             <li><Link to="/about#company-overview">Company Overview</Link></li>
             <li><Link to="/about#video">Andremed Introduction Video</Link></li>
             <li><Link to="/about#certifications">Certifications</Link></li>
@@ -43,9 +43,9 @@ function Footer() {
         </div>
 
         {/* Colonne 2 - Products */}
-        <div style={styles.footerColumn}>
-          <h3 style={styles.footerTitle}>Products</h3>
-          <ul style={styles.footerList}>
+        <div style={footerStyles.footerColumn}>
+          <h3 style={footerStyles.footerTitle}>Products</h3>
+          <ul style={footerStyles.footerList}>
             <li><Link to="/shop?category=imaging">Imaging system equipment</Link></li>
             <li><Link to="/shop?category=laboratory">Laboratory equipment</Link></li>
             <li><Link to="/shop?category=gynecology">Gynecology & Obstetrics</Link></li>
@@ -60,9 +60,9 @@ function Footer() {
         </div>
 
         {/* Colonne 3 - Resource Center */}
-        <div style={styles.footerColumn}>
-          <h3 style={styles.footerTitle}>Resource Center</h3>
-          <ul style={styles.footerList}>
+        <div style={footerStyles.footerColumn}>
+          <h3 style={footerStyles.footerTitle}>Resource Center</h3>
+          <ul style={footerStyles.footerList}>
             <li><Link to="/catalog">Product catalogue</Link></li>
             <li><Link to="/videos">Product video</Link></li>
             <li><Link to="/downloads">Download</Link></li>
@@ -77,9 +77,9 @@ function Footer() {
         </div>
 
         {/* Colonne 4 - Member */}
-        <div style={styles.footerColumn}>
-          <h3 style={styles.footerTitle}>Member</h3>
-          <ul style={styles.footerList}>
+        <div style={footerStyles.footerColumn}>
+          <h3 style={footerStyles.footerTitle}>Member</h3>
+          <ul style={footerStyles.footerList}>
             <li><Link to="/member/create-account">Create an Account</Link></li>
             <li><Link to="/member/change-account">Change Account</Link></li>
             <li><Link to="/member/wishlist">WishList</Link></li>
@@ -94,9 +94,9 @@ function Footer() {
         </div>
 
         {/* Colonne 5 - Services & Support */}
-        <div style={styles.footerColumn}>
-          <h3 style={styles.footerTitle}>Services & Support</h3>
-          <ul style={styles.footerList}>
+        <div style={footerStyles.footerColumn}>
+          <h3 style={footerStyles.footerTitle}>Services & Support</h3>
+          <ul style={footerStyles.footerList}>
             <li><Link to="/services">Our Services</Link></li>
             <li><Link to="/faq">FAQ</Link></li>
             <li><Link to="/help">Help center</Link></li>
@@ -111,9 +111,9 @@ function Footer() {
         </div>
 
         {/* Colonne 6 - Contact avec les nouvelles adresses email */}
-        <div style={styles.footerColumn}>
-          <h3 style={styles.footerTitle}>Contact</h3>
-          <ul style={styles.footerList}>
+        <div style={footerStyles.footerColumn}>
+          <h3 style={footerStyles.footerTitle}>Contact</h3>
+          <ul style={footerStyles.footerList}>
             <li><Link to="/contact">Contact Us</Link></li>
             <li><Link to="/support">Customer Support</Link></li>
             <li><Link to="/sales">Sales Inquiries</Link></li>
@@ -127,47 +127,47 @@ function Footer() {
           </ul>
 
           {/* ✅ NOUVELLES ADRESSES EMAIL AJOUTÉES */}
-          <div style={styles.contactInfo}>
-            <div style={styles.contactItem}>
-              <span style={styles.contactIcon}>📧</span>
-              <span style={styles.contactLabel}>Information :</span>
-              <a href="mailto:contact@andremed.org" style={styles.contactLink}>contact@andremed.org</a>
+          <div style={footerStyles.contactInfo}>
+            <div style={footerStyles.contactItem}>
+              <span style={footerStyles.contactIcon}>📧</span>
+              <span style={footerStyles.contactLabel}>Information :</span>
+              <a href="mailto:contact@andremed.org" style={footerStyles.contactLink}>contact@andremed.org</a>
             </div>
-            <div style={styles.contactItem}>
-              <span style={styles.contactIcon}>📦</span>
-              <span style={styles.contactLabel}>Commandes & Livraison :</span>
-              <a href="mailto:supporttechn.log@andremed.org" style={styles.contactLink}>supporttechn.log@andremed.org</a>
+            <div style={footerStyles.contactItem}>
+              <span style={footerStyles.contactIcon}>📦</span>
+              <span style={footerStyles.contactLabel}>Commandes & Livraison :</span>
+              <a href="mailto:supporttechn.log@andremed.org" style={footerStyles.contactLink}>supporttechn.log@andremed.org</a>
             </div>
-            <div style={styles.contactItem}>
-              <span style={styles.contactIcon}>💰</span>
-              <span style={styles.contactLabel}>Administration & Finance :</span>
-              <a href="mailto:admin.finance@andremed.org" style={styles.contactLink}>admin.finance@andremed.org</a>
+            <div style={footerStyles.contactItem}>
+              <span style={footerStyles.contactIcon}>💰</span>
+              <span style={footerStyles.contactLabel}>Administration & Finance :</span>
+              <a href="mailto:admin.finance@andremed.org" style={footerStyles.contactLink}>admin.finance@andremed.org</a>
             </div>
-            <div style={styles.contactItem}>
-              <span style={styles.contactIcon}>👔</span>
-              <span style={styles.contactLabel}>Direction :</span>
-              <a href="mailto:andre.kabe@andremed.org" style={styles.contactLink}>andre.kabe@andremed.org</a>
+            <div style={footerStyles.contactItem}>
+              <span style={footerStyles.contactIcon}>👔</span>
+              <span style={footerStyles.contactLabel}>Direction :</span>
+              <a href="mailto:andre.kabe@andremed.org" style={footerStyles.contactLink}>andre.kabe@andremed.org</a>
             </div>
           </div>
 
           {/* Réseaux sociaux */}
-          <div style={styles.socialLinks}>
-            <a href={settings.facebook_url || "https://facebook.com"} target="_blank" rel="noopener noreferrer" style={styles.socialIcon}>
+          <div style={footerStyles.socialLinks}>
+            <a href={settings.facebook_url || "https://facebook.com"} target="_blank" rel="noopener noreferrer" style={footerStyles.socialIcon}>
               <img src="https://cdn-icons-png.flaticon.com/512/5968/5968764.png" alt="Facebook" style={{ width: '28px', height: '28px' }} />
             </a>
-            <a href={settings.linkedin_url || "https://linkedin.com"} target="_blank" rel="noopener noreferrer" style={styles.socialIcon}>
+            <a href={settings.linkedin_url || "https://linkedin.com"} target="_blank" rel="noopener noreferrer" style={footerStyles.socialIcon}>
               <img src="https://cdn-icons-png.flaticon.com/512/145/145807.png" alt="LinkedIn" style={{ width: '28px', height: '28px' }} />
             </a>
-            <a href={settings.tiktok_url || "https://tiktok.com"} target="_blank" rel="noopener noreferrer" style={styles.socialIcon}>
+            <a href={settings.tiktok_url || "https://tiktok.com"} target="_blank" rel="noopener noreferrer" style={footerStyles.socialIcon}>
               <img src="https://cdn-icons-png.flaticon.com/512/3046/3046126.png" alt="TikTok" style={{ width: '28px', height: '28px' }} />
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={styles.socialIcon}>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={footerStyles.socialIcon}>
               <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter" style={{ width: '28px', height: '28px' }} />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={styles.socialIcon}>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={footerStyles.socialIcon}>
               <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" style={{ width: '28px', height: '28px' }} />
             </a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" style={styles.socialIcon}>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" style={footerStyles.socialIcon}>
               <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" style={{ width: '28px', height: '28px' }} />
             </a>
           </div>
@@ -175,14 +175,14 @@ function Footer() {
       </div>
 
       {/* Footer Bottom */}
-      <div style={styles.footerBottom}>
-        <div style={styles.footerBottomLinks}>
+      <div style={footerStyles.footerBottom}>
+        <div style={footerStyles.footerBottomLinks}>
           <Link to="/">Home</Link> | <Link to="/about">About us</Link> | <Link to="/blog">Blog</Link> | <Link to="/contact">Contact us</Link> | GlobalMind.MK.Innotech
         </div>
-        <div style={styles.paymentIcons}>
+        <div style={footerStyles.paymentIcons}>
           <span>MobileMoney</span> <span>FedEx</span> <span>TNT</span> <span>EMS</span> <span>VISA</span> <span>MasterCard</span> <span>PayPal</span>
         </div>
-        <div style={styles.copyright}>
+        <div style={footerStyles.copyright}>
           Copyright © 2017 Andremed Medical . All Rights Reserved.
         </div>
       </div>
@@ -190,8 +190,8 @@ function Footer() {
   );
 }
 
-// ========== STYLES ==========
-const styles = {
+// ========== STYLES (copiés exactement depuis Home.js) ==========
+const footerStyles = {
   footer: {
     backgroundImage: 'url("/footer-bg.jpeg")',
     backgroundSize: 'cover',
@@ -223,7 +223,6 @@ const styles = {
     padding: 0,
     margin: 0
   },
-  // ✅ Styles pour les contacts
   contactInfo: {
     marginTop: '15px',
     paddingTop: '15px',
@@ -281,7 +280,7 @@ const styles = {
   }
 };
 
-// Styles injectés globalement
+// ✅ Injection des styles CSS globaux (comme dans Home.js)
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   .custom-footer .footerList li { margin-bottom: 8px; }
@@ -305,6 +304,20 @@ styleSheet.textContent = `
     font-size: 0.7rem; 
     opacity: 0.8; 
     color: white; 
+  }
+  .custom-footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  .custom-footer > * {
+    position: relative;
+    z-index: 2;
   }
 `;
 document.head.appendChild(styleSheet);
