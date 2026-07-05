@@ -265,13 +265,19 @@ function AdminPanel() {
     id: Date.now(), 
     name: 'Nouveau produit', 
     category: '', 
+    description: '',
+    brand: '',
+    warranty: '',
+    delivery: '',
     quantity: 0, 
     price: 0, 
+    oldPrice: 0,
     unit: 'pièce', 
     seuil_alerte: 10, 
     image: '📦', 
     media: [],
-    is_new: false, 
+    is_new: false,
+    featured: false,
     active: true 
   }]);
   const updateProduct = (idx, field, val) => setProducts(products.map((p, i) => i === idx ? { ...p, [field]: val } : p));
@@ -491,28 +497,23 @@ function AdminPanel() {
   };
 
   // ================= GESTION PAGES SERVICES =================
-const saveServicePages = async () => {
-  try {
-    for (const page of servicePages) {
-      const toUpsert = { ...page };
-      if (toUpsert.id > 1000000000000) delete toUpsert.id;
-      
-      // ✅ Échapper le contenu HTML pour éviter les problèmes
-      if (toUpsert.content) {
-        // Le contenu est déjà une chaîne, on le garde tel quel
-        // mais on s'assure qu'il est bien encodé
-        toUpsert.content = toUpsert.content;
+  const updateServicePage = (idx, field, val) => {
+    setServicePages(servicePages.map((p, i) => i === idx ? { ...p, [field]: val } : p));
+  };
+  const saveServicePages = async () => {
+    try {
+      for (const page of servicePages) {
+        const toUpsert = { ...page };
+        if (toUpsert.id > 1000000000000) delete toUpsert.id;
+        await supabase.from('service_pages').upsert(toUpsert);
       }
-      
-      await supabase.from('service_pages').upsert(toUpsert);
+      alert('Pages services sauvegardées avec succès !');
+      loadAllData();
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur lors de la sauvegarde. Vérifiez le contenu HTML.');
     }
-    alert('Pages services sauvegardées avec succès !');
-    loadAllData();
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde:', error);
-    alert('Erreur lors de la sauvegarde. Vérifiez le contenu HTML.');
-  }
-};
+  };
 
   // ================= GESTION PAGES CONTACT =================
   const updateContactPage = (idx, field, val) => {
@@ -828,7 +829,6 @@ const saveServicePages = async () => {
           <input placeholder="Titre À propos" value={settings.about_title || ''} onChange={e => setSettings({ ...settings, about_title: e.target.value })} style={{ width: '100%', marginBottom: '8px' }} />
           <textarea placeholder="Description" rows="3" value={settings.about_description || ''} onChange={e => setSettings({ ...settings, about_description: e.target.value })} style={{ width: '100%', marginBottom: '8px' }} />
           
-          {/* ✅ AJOUT : Mission et Vision */}
           <textarea placeholder="Mission" rows="3" value={settings.about_mission || ''} onChange={e => setSettings({ ...settings, about_mission: e.target.value })} style={{ width: '100%', marginBottom: '8px' }} />
           <textarea placeholder="Vision" rows="3" value={settings.about_vision || ''} onChange={e => setSettings({ ...settings, about_vision: e.target.value })} style={{ width: '100%', marginBottom: '8px' }} />
 
@@ -927,49 +927,138 @@ const saveServicePages = async () => {
         </section>
       )}
 
-      {/* ================= ONGLET PRODUITS (AVEC IMAGES MULTIPLES) ================= */}
+      {/* ================= ONGLET PRODUITS (AVEC TOUS LES CHAMPS) ================= */}
       {activeTab === 'products' && (
         <section style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
           <h2>📦 Produits</h2>
           <button onClick={addProduct}>➕ Ajouter un produit</button>
+          
           {products.map((p, idx) => (
             <div key={idx} style={{ border: '1px solid #ddd', padding: '1rem', marginTop: '1rem', borderRadius: '8px' }}>
-              <input
-                placeholder="Nom"
-                value={p.name}
-                onChange={e => updateProduct(idx, 'name', e.target.value)}
-                style={{ width: '100%', marginBottom: '8px' }}
-              />
-              <input
-                placeholder="Catégorie"
-                value={p.category || ''}
-                onChange={e => updateProduct(idx, 'category', e.target.value)}
-                style={{ width: '100%', marginBottom: '8px' }}
-              />
-              <input
-                placeholder="Prix"
-                type="number"
-                value={p.price}
-                onChange={e => updateProduct(idx, 'price', parseFloat(e.target.value))}
-                style={{ width: '100%', marginBottom: '8px' }}
-              />
-              <input
-                placeholder="Quantité"
-                type="number"
-                value={p.quantity}
-                onChange={e => updateProduct(idx, 'quantity', parseInt(e.target.value))}
-                style={{ width: '100%', marginBottom: '8px' }}
-              />
+              {/* Informations de base */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Nom du produit *</label>
+                  <input
+                    placeholder="Nom du produit"
+                    value={p.name || ''}
+                    onChange={e => updateProduct(idx, 'name', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Catégorie</label>
+                  <input
+                    placeholder="Catégorie (ex: Imagerie, Laboratoire...)"
+                    value={p.category || ''}
+                    onChange={e => updateProduct(idx, 'category', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+              </div>
 
-              <UploadField
-                label="Image principale"
-                value={p.image}
-                onValueChange={(url) => updateProduct(idx, 'image', url)}
-                folder="products"
-              />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '10px' }}>
+                <div>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Prix (€)</label>
+                  <input
+                    placeholder="Prix"
+                    type="number"
+                    value={p.price || 0}
+                    onChange={e => updateProduct(idx, 'price', parseFloat(e.target.value) || 0)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Ancien prix (€) - optionnel</label>
+                  <input
+                    placeholder="Ancien prix (pour promo)"
+                    type="number"
+                    value={p.oldPrice || ''}
+                    onChange={e => updateProduct(idx, 'oldPrice', parseFloat(e.target.value) || 0)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+              </div>
 
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '10px' }}>
+                <div>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Quantité en stock</label>
+                  <input
+                    placeholder="Quantité"
+                    type="number"
+                    value={p.quantity || 0}
+                    onChange={e => updateProduct(idx, 'quantity', parseInt(e.target.value) || 0)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Unité</label>
+                  <input
+                    placeholder="Unité (ex: pièce, lot...)"
+                    value={p.unit || 'pièce'}
+                    onChange={e => updateProduct(idx, 'unit', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div style={{ marginTop: '10px' }}>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Description *</label>
+                <textarea
+                  placeholder="Description détaillée du produit..."
+                  rows="4"
+                  value={p.description || ''}
+                  onChange={e => updateProduct(idx, 'description', e.target.value)}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontFamily: 'inherit' }}
+                />
+              </div>
+
+              {/* Informations supplémentaires */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '10px' }}>
+                <div>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Marque</label>
+                  <input
+                    placeholder="Marque"
+                    value={p.brand || ''}
+                    onChange={e => updateProduct(idx, 'brand', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Garantie</label>
+                  <input
+                    placeholder="Garantie (ex: 2 ans)"
+                    value={p.warranty || ''}
+                    onChange={e => updateProduct(idx, 'warranty', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Délai de livraison</label>
+                  <input
+                    placeholder="Délai de livraison"
+                    value={p.delivery || ''}
+                    onChange={e => updateProduct(idx, 'delivery', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+              </div>
+
+              {/* Image principale */}
+              <div style={{ marginTop: '10px' }}>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Image principale</label>
+                <UploadField
+                  label="Image principale"
+                  value={p.image}
+                  onValueChange={(url) => updateProduct(idx, 'image', url)}
+                  folder="products"
+                />
+              </div>
+
+              {/* Images supplémentaires */}
               <div style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
-                <label><strong>Images supplémentaires :</strong></label>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Images supplémentaires</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px' }}>
                   {(p.media || []).map((url, imgIdx) => (
                     <div key={imgIdx} style={{ position: 'relative', display: 'inline-block' }}>
@@ -1026,16 +1115,69 @@ const saveServicePages = async () => {
                 </p>
               </div>
 
-              <div style={{ marginTop: '12px' }}>
-                <label><input type="checkbox" checked={p.is_new} onChange={e => updateProduct(idx, 'is_new', e.target.checked)} /> Nouveau</label>
-                <label style={{ marginLeft: '15px' }}><input type="checkbox" checked={p.active !== false} onChange={e => updateProduct(idx, 'active', e.target.checked)} /> Actif</label>
+              {/* Options */}
+              <div style={{ marginTop: '12px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={p.is_new || false}
+                    onChange={e => updateProduct(idx, 'is_new', e.target.checked)}
+                  />
+                  <span style={{ color: p.is_new ? '#FF9800' : '#666' }}>
+                    {p.is_new ? '⭐ Nouveau' : 'Nouveau'}
+                  </span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={p.featured || false}
+                    onChange={e => updateProduct(idx, 'featured', e.target.checked)}
+                  />
+                  <span style={{ color: p.featured ? '#FF9800' : '#666' }}>
+                    {p.featured ? '⭐ Produit vedette' : 'Produit vedette'}
+                  </span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={p.active !== false}
+                    onChange={e => updateProduct(idx, 'active', e.target.checked)}
+                  />
+                  <span style={{ color: p.active !== false ? '#2E7D32' : '#B41E1E' }}>
+                    {p.active !== false ? '✅ Actif' : '❌ Inactif'}
+                  </span>
+                </label>
               </div>
-              <button onClick={() => deleteProduct(idx)} style={{ background: '#B41E1E', color: 'white', marginTop: '10px', padding: '6px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+
+              <button
+                onClick={() => deleteProduct(idx)}
+                style={{
+                  background: '#B41E1E',
+                  color: 'white',
+                  marginTop: '10px',
+                  padding: '6px 12px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
                 🗑 Supprimer
               </button>
             </div>
           ))}
-          <button onClick={saveProducts} style={{ marginTop: '1rem', background: '#2E7D32', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+          
+          <button
+            onClick={saveProducts}
+            style={{
+              marginTop: '1rem',
+              background: '#2E7D32',
+              color: 'white',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+          >
             💾 Sauvegarder tous les produits
           </button>
         </section>
