@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { supabase } from '../lib/supabase'; // ✅ Import Supabase
 
 function Support() {
   const [counters, setCounters] = useState({
@@ -11,6 +12,10 @@ function Support() {
   });
 
   const { ref: statsRef, inView: statsInView } = useInView({ triggerOnce: true });
+
+  // ✅ États pour les FAQ dynamiques
+  const [faqQuestions, setFaqQuestions] = useState([]);
+  const [faqLoading, setFaqLoading] = useState(true);
 
   // États pour le chat
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -43,6 +48,28 @@ function Support() {
   // Configuration Telegram
   const TELEGRAM_BOT_TOKEN = '8570394266:AAE1_Az0Hzot09m8u3s4Ml-EUMHQjgqunwY';
   const GROUP_CHAT_ID = '-5293060257';
+
+  // ✅ Charger les FAQ depuis Supabase
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      setFaqLoading(true);
+      const { data, error } = await supabase
+        .from('faq')
+        .select('*')
+        .eq('active', true)
+        .order('order', { ascending: true });
+
+      if (error) {
+        console.error('Erreur chargement FAQ:', error);
+        setFaqQuestions([]);
+      } else {
+        setFaqQuestions(data || []);
+      }
+      setFaqLoading(false);
+    };
+
+    fetchFaqs();
+  }, []);
 
   useEffect(() => {
     if (statsInView) {
@@ -179,7 +206,6 @@ function Support() {
 
   const sendEmail = async (to, subject, message, clientEmail = null) => {
     const WEB3FORMS_KEY = 'ad320909-c81a-4b9d-98fa-a545b02ed85d';
-    // Les destinataires sont contact@andremed.org et supporttechn.log@andremed.org
     const recipients = ['contact@andremed.org', 'supporttechn.log@andremed.org'];
     const emailContent = `
       Nom: ${chatName || 'Non renseigné'}
@@ -214,9 +240,9 @@ function Support() {
       return;
     }
     setFaqSending(true);
-    const message = `Question: ${selectedQuestion.q}\n\nNom: ${faqName}\nÉtablissement: ${faqInstitution}`;
+    const message = `Question: ${selectedQuestion.question}\n\nNom: ${faqName}\nÉtablissement: ${faqInstitution}`;
     const telegramOk = await sendToTelegram(message, faqName, '');
-    const emailOk = await sendEmail('support', `Question FAQ - ${selectedQuestion.q.substring(0, 50)}`, message);
+    const emailOk = await sendEmail('support', `Question FAQ - ${selectedQuestion.question.substring(0, 50)}`, message);
     if (telegramOk && emailOk) {
       setFaqStatus('✅ Votre question a été envoyée. Nous vous répondrons rapidement.');
       setTimeout(() => {
@@ -287,17 +313,6 @@ function Support() {
       color: "#B41E1E",
       action: "chat"
     }
-  ];
-
-  const questions = [
-    { q: "Comment installer un nouvel équipement ?", a: "Consultez notre guide d'installation ou contactez notre support technique pour une assistance personnalisée." },
-    { q: "Que faire en cas de panne ?", a: "Contactez immédiatement notre hotline 24/7 au +243 82 99 84 833 pour une assistance rapide." },
-    { q: "Comment obtenir une formation ?", a: "Nous proposons des formations sur site et à distance. Contactez-nous pour planifier une session." },
-    { q: "Où trouver les manuels techniques ?", a: "Tous nos manuels sont disponibles dans l'espace client ou sur demande par email." },
-    { q: "Quels sont les délais de livraison ?", a: "La livraison en RDC prend généralement 5 à 10 jours ouvrés selon la ville." },
-    { q: "Proposez-vous des contrats de maintenance ?", a: "Oui, nous proposons des contrats de maintenance préventive et corrective adaptés à vos besoins." },
-    { q: "Comment puis-je suivre ma commande ?", a: "Connectez-vous à votre espace client pour suivre l'évolution de votre commande en temps réel." },
-    { q: "Les équipements sont-ils garantis ?", a: "Tous nos équipements bénéficient d'une garantie constructeur de 2 à 5 ans selon le produit." }
   ];
 
   const openFaqModal = (question) => {
@@ -409,28 +424,38 @@ function Support() {
         </div>
       </section>
 
+      {/* ✅ Section FAQ dynamique */}
       <section style={styles.faqSection}>
         <h2 style={styles.sectionTitle}>❓ Questions Fréquentes</h2>
         <p style={styles.sectionSubtitle}>Trouvez rapidement des réponses à vos questions</p>
-        <div style={styles.faqGrid}>
-          {questions.map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: i % 2 === 0 ? -50 : 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-card"
-              style={styles.faqCard}
-              onClick={() => openFaqModal(item)}
-            >
-              <div style={styles.faqQuestion}>
-                <span style={styles.faqIcon}>❓</span>
-                <h3>{item.q}</h3>
-              </div>
-              <p style={styles.faqAnswer}>{item.a}</p>
-            </motion.div>
-          ))}
-        </div>
+        
+        {faqLoading ? (
+          <p style={{ textAlign: 'center', padding: '2rem' }}>Chargement des FAQ...</p>
+        ) : faqQuestions.length === 0 ? (
+          <p style={{ textAlign: 'center', padding: '2rem', color: '#6C757D' }}>
+            Aucune FAQ disponible pour le moment.
+          </p>
+        ) : (
+          <div style={styles.faqGrid}>
+            {faqQuestions.map((item, i) => (
+              <motion.div
+                key={item.id || i}
+                initial={{ opacity: 0, x: i % 2 === 0 ? -50 : 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="glass-card"
+                style={styles.faqCard}
+                onClick={() => openFaqModal(item)}
+              >
+                <div style={styles.faqQuestion}>
+                  <span style={styles.faqIcon}>❓</span>
+                  <h3>{item.question}</h3>
+                </div>
+                <p style={styles.faqAnswer}>{item.answer}</p>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section style={styles.ctaSection}>
@@ -445,12 +470,12 @@ function Support() {
         </div>
       </section>
 
-      {/* Modales (FAQ, Email, Chat) identiques à votre code existant, je les garde inchangées */}
+      {/* Modales (FAQ, Email, Chat) */}
       {showFaqModal && selectedQuestion && (
         <div style={styles.modal} onClick={() => setShowFaqModal(false)}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h3>❓ {selectedQuestion.q}</h3>
+              <h3>❓ {selectedQuestion.question}</h3>
               <button style={styles.modalClose} onClick={() => setShowFaqModal(false)}>✕</button>
             </div>
             <form onSubmit={handleFaqSubmit} style={styles.modalForm}>
@@ -530,6 +555,7 @@ function Support() {
   );
 }
 
+// ========== STYLES (inchangés) ==========
 const styles = {
   container: { minHeight: '100vh', background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)', paddingTop: '80px' },
   hero: { background: 'linear-gradient(135deg, #0A4D8C 0%, #00A3B2 100%)', color: 'white', padding: '80px 20px', textAlign: 'center' },
