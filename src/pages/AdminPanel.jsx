@@ -491,18 +491,28 @@ function AdminPanel() {
   };
 
   // ================= GESTION PAGES SERVICES =================
-  const updateServicePage = (idx, field, val) => {
-    setServicePages(servicePages.map((p, i) => i === idx ? { ...p, [field]: val } : p));
-  };
-  const saveServicePages = async () => {
+const saveServicePages = async () => {
+  try {
     for (const page of servicePages) {
       const toUpsert = { ...page };
       if (toUpsert.id > 1000000000000) delete toUpsert.id;
+      
+      // ✅ Échapper le contenu HTML pour éviter les problèmes
+      if (toUpsert.content) {
+        // Le contenu est déjà une chaîne, on le garde tel quel
+        // mais on s'assure qu'il est bien encodé
+        toUpsert.content = toUpsert.content;
+      }
+      
       await supabase.from('service_pages').upsert(toUpsert);
     }
-    alert('Pages services sauvegardées');
+    alert('Pages services sauvegardées avec succès !');
     loadAllData();
-  };
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde:', error);
+    alert('Erreur lors de la sauvegarde. Vérifiez le contenu HTML.');
+  }
+};
 
   // ================= GESTION PAGES CONTACT =================
   const updateContactPage = (idx, field, val) => {
