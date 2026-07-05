@@ -1304,6 +1304,11 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
               <li><Link to="/terms">Terms of Service</Link></li>
               <li><Link to="/sitemap">Sitemap</Link></li>
               <li><Link to="/accessibility">Accessibility</Link></li>
+              {/* ===== AJOUT DES EMAILS ===== */}
+              <li><a href="mailto:contact@andremed.org" style={{ color: 'rgba(255,255,255,0.9)' }}>📧 contact@andremed.org</a></li>
+              <li><a href="mailto:supporttechn.log@andremed.org" style={{ color: 'rgba(255,255,255,0.9)' }}>📦 Commandes & Livraison</a></li>
+              <li><a href="mailto:admin.finance@andremed.org" style={{ color: 'rgba(255,255,255,0.9)' }}>💰 Administration & Finance</a></li>
+              <li><a href="mailto:andre.kabe@andremed.org" style={{ color: 'rgba(255,255,255,0.9)' }}>👔 Direction</a></li>
             </ul>
             <div style={styles.socialLinks}>
               <a href={settings.facebook_url || "https://facebook.com"} target="_blank" rel="noopener noreferrer" style={styles.socialIcon}>
