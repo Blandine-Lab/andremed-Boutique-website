@@ -261,39 +261,80 @@ function AdminPanel() {
   };
 
   // ================= GESTION PRODUITS =================
-  const addProduct = () => setProducts([...products, { 
-    id: Date.now(), 
-    name: '', 
-    category: '', 
-    description: '',
-    brand: '',
-    warranty: '',
-    delivery: '',
-    quantity: 0, 
-    price: 0, 
-    oldPrice: null,
-    unit: 'pièce', 
-    seuil_alerte: 10, 
-    image: '', 
-    media: [],
-    is_new: false,
-    featured: false,
-    active: true 
-  }]);
-  const updateProduct = (idx, field, val) => setProducts(products.map((p, i) => i === idx ? { ...p, [field]: val } : p));
+  const addProduct = () => {
+    const newProduct = {
+      id: Date.now(),
+      name: '',
+      category: '',
+      description: '',
+      brand: '',
+      warranty: '',
+      delivery: '',
+      quantity: 0,
+      price: 0,
+      oldPrice: null,
+      unit: 'pièce',
+      seuil_alerte: 10,
+      image: '',
+      media: [],
+      is_new: false,
+      featured: false,
+      active: true,
+      created_at: new Date().toISOString()
+    };
+    setProducts([...products, newProduct]);
+  };
+  
+  const updateProduct = (idx, field, val) => {
+    const updatedProducts = [...products];
+    updatedProducts[idx] = { ...updatedProducts[idx], [field]: val };
+    setProducts(updatedProducts);
+  };
+  
   const deleteProduct = async (idx) => {
     const p = products[idx];
-    if (p.id && typeof p.id === 'number' && p.id < 1000000000000) await supabase.from('products').delete().eq('id', p.id);
+    if (p.id && typeof p.id === 'number' && p.id < 1000000000000) {
+      await supabase.from('products').delete().eq('id', p.id);
+    }
     setProducts(products.filter((_, i) => i !== idx));
   };
+  
   const saveProducts = async () => {
-    for (const p of products) {
-      const toUpsert = { ...p };
-      if (toUpsert.id > 1000000000000) delete toUpsert.id;
-      await supabase.from('products').upsert(toUpsert);
+    try {
+      for (const p of products) {
+        const toUpsert = { ...p };
+        // Supprimer l'id temporaire si c'est un nouveau produit
+        if (toUpsert.id > 1000000000000) {
+          delete toUpsert.id;
+        }
+        // S'assurer que les champs obligatoires ont des valeurs
+        if (!toUpsert.name) toUpsert.name = 'Produit sans nom';
+        if (!toUpsert.description) toUpsert.description = '';
+        if (!toUpsert.category) toUpsert.category = '';
+        if (!toUpsert.brand) toUpsert.brand = '';
+        if (!toUpsert.warranty) toUpsert.warranty = '';
+        if (!toUpsert.delivery) toUpsert.delivery = '';
+        if (!toUpsert.unit) toUpsert.unit = 'pièce';
+        if (toUpsert.oldPrice === '' || toUpsert.oldPrice === null) toUpsert.oldPrice = null;
+        
+        const { data, error } = await supabase
+          .from('products')
+          .upsert(toUpsert)
+          .select();
+          
+        if (error) {
+          console.error('Erreur lors de la sauvegarde du produit:', error);
+          alert(`Erreur lors de la sauvegarde du produit "${p.name}": ${error.message}`);
+        } else {
+          console.log('Produit sauvegardé avec succès:', data);
+        }
+      }
+      alert('✅ Tous les produits ont été sauvegardés avec succès !');
+      await loadAllData();
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde des produits:', error);
+      alert('❌ Erreur lors de la sauvegarde des produits. Vérifiez la console pour plus de détails.');
     }
-    alert('Produits sauvegardés');
-    loadAllData();
   };
 
   // ================= GESTION SERVICES =================
@@ -676,18 +717,28 @@ function AdminPanel() {
   // ================= COMPOSANT UPLOADFIELD =================
   const UploadField = ({ value, onValueChange, folder = 'images', accept = 'image/*', label = 'Image' }) => {
     const [uploading, setUploading] = useState(false);
+    const [preview, setPreview] = useState(value || '');
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+      setPreview(value || '');
+    }, [value]);
 
     const handleFile = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       setUploading(true);
-      const url = await uploadImage(file, folder);
-      setUploading(false);
-      if (url) {
-        onValueChange(url);
-        console.log('✅ Image uploadée avec succès:', url);
+      try {
+        const url = await uploadImage(file, folder);
+        if (url) {
+          setPreview(url);
+          onValueChange(url);
+          console.log(`✅ Image uploadée avec succès: ${url}`);
+        }
+      } catch (error) {
+        console.error('Erreur lors de l\'upload:', error);
       }
+      setUploading(false);
       e.target.value = '';
     };
 
@@ -701,8 +752,11 @@ function AdminPanel() {
           <input
             type="text"
             placeholder={`URL de ${label}`}
-            value={value || ''}
-            onChange={(e) => onValueChange(e.target.value)}
+            value={preview || ''}
+            onChange={(e) => {
+              setPreview(e.target.value);
+              onValueChange(e.target.value);
+            }}
             style={{ flex: 1, minWidth: '200px', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
           />
           <input
@@ -718,12 +772,12 @@ function AdminPanel() {
             style={{ padding: '8px 16px', background: '#00A3B2', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
             disabled={uploading}
           >
-            {uploading ? 'Upload...' : '📂 Choisir un fichier'}
+            {uploading ? '📤 Upload...' : '📂 Choisir un fichier'}
           </button>
         </div>
-        {value && (
+        {preview && (
           <div style={{ marginTop: '5px' }}>
-            <img src={value} alt="Prévisualisation" style={{ maxWidth: '100px', maxHeight: '100px', borderRadius: '8px', border: '1px solid #ddd' }} />
+            <img src={preview} alt="Prévisualisation" style={{ maxWidth: '100px', maxHeight: '100px', borderRadius: '8px', border: '1px solid #ddd' }} />
           </div>
         )}
       </div>
@@ -930,7 +984,7 @@ function AdminPanel() {
         </section>
       )}
 
-      {/* ================= ONGLET PRODUITS (AVEC TOUS LES CHAMPS ET LABELS EN GRAS) ================= */}
+      {/* ================= ONGLET PRODUITS ================= */}
       {activeTab === 'products' && (
         <section style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
           <h2>📦 Produits</h2>
@@ -945,8 +999,8 @@ function AdminPanel() {
                   <input
                     placeholder="Nom du produit"
                     value={p.name || ''}
-                    onChange={e => updateProduct(idx, 'name', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
+                    onChange={(e) => updateProduct(idx, 'name', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
                 <div>
@@ -954,8 +1008,8 @@ function AdminPanel() {
                   <input
                     placeholder="Catégorie (ex: Imagerie, Laboratoire...)"
                     value={p.category || ''}
-                    onChange={e => updateProduct(idx, 'category', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
+                    onChange={(e) => updateProduct(idx, 'category', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
               </div>
@@ -968,8 +1022,8 @@ function AdminPanel() {
                     type="number"
                     step="0.01"
                     value={p.price || 0}
-                    onChange={e => updateProduct(idx, 'price', parseFloat(e.target.value) || 0)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
+                    onChange={(e) => updateProduct(idx, 'price', parseFloat(e.target.value) || 0)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
                 <div>
@@ -979,8 +1033,8 @@ function AdminPanel() {
                     type="number"
                     step="0.01"
                     value={p.oldPrice || ''}
-                    onChange={e => updateProduct(idx, 'oldPrice', parseFloat(e.target.value) || 0)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
+                    onChange={(e) => updateProduct(idx, 'oldPrice', parseFloat(e.target.value) || null)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
               </div>
@@ -992,8 +1046,8 @@ function AdminPanel() {
                     placeholder="Quantité"
                     type="number"
                     value={p.quantity || 0}
-                    onChange={e => updateProduct(idx, 'quantity', parseInt(e.target.value) || 0)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
+                    onChange={(e) => updateProduct(idx, 'quantity', parseInt(e.target.value) || 0)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
                 <div>
@@ -1001,8 +1055,8 @@ function AdminPanel() {
                   <input
                     placeholder="Unité (ex: pièce, lot...)"
                     value={p.unit || 'pièce'}
-                    onChange={e => updateProduct(idx, 'unit', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
+                    onChange={(e) => updateProduct(idx, 'unit', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
               </div>
@@ -1014,8 +1068,8 @@ function AdminPanel() {
                   placeholder="Description détaillée du produit..."
                   rows="4"
                   value={p.description || ''}
-                  onChange={e => updateProduct(idx, 'description', e.target.value)}
-                  style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontFamily: 'inherit', fontWeight: 'normal' }}
+                  onChange={(e) => updateProduct(idx, 'description', e.target.value)}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontFamily: 'inherit' }}
                 />
               </div>
 
@@ -1026,8 +1080,8 @@ function AdminPanel() {
                   <input
                     placeholder="Marque"
                     value={p.brand || ''}
-                    onChange={e => updateProduct(idx, 'brand', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
+                    onChange={(e) => updateProduct(idx, 'brand', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
                 <div>
@@ -1035,8 +1089,8 @@ function AdminPanel() {
                   <input
                     placeholder="Garantie (ex: 2 ans)"
                     value={p.warranty || ''}
-                    onChange={e => updateProduct(idx, 'warranty', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
+                    onChange={(e) => updateProduct(idx, 'warranty', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
                 <div>
@@ -1044,8 +1098,8 @@ function AdminPanel() {
                   <input
                     placeholder="Délai de livraison"
                     value={p.delivery || ''}
-                    onChange={e => updateProduct(idx, 'delivery', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
+                    onChange={(e) => updateProduct(idx, 'delivery', e.target.value)}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                 </div>
               </div>
@@ -1126,9 +1180,9 @@ function AdminPanel() {
                   <input
                     type="checkbox"
                     checked={p.is_new || false}
-                    onChange={e => updateProduct(idx, 'is_new', e.target.checked)}
+                    onChange={(e) => updateProduct(idx, 'is_new', e.target.checked)}
                   />
-                  <span style={{ color: p.is_new ? '#FF9800' : '#666', fontWeight: 'normal' }}>
+                  <span style={{ color: p.is_new ? '#FF9800' : '#666' }}>
                     {p.is_new ? '⭐ Nouveau' : 'Nouveau'}
                   </span>
                 </label>
@@ -1136,9 +1190,9 @@ function AdminPanel() {
                   <input
                     type="checkbox"
                     checked={p.featured || false}
-                    onChange={e => updateProduct(idx, 'featured', e.target.checked)}
+                    onChange={(e) => updateProduct(idx, 'featured', e.target.checked)}
                   />
-                  <span style={{ color: p.featured ? '#FF9800' : '#666', fontWeight: 'normal' }}>
+                  <span style={{ color: p.featured ? '#FF9800' : '#666' }}>
                     {p.featured ? '⭐ Produit vedette' : 'Produit vedette'}
                   </span>
                 </label>
@@ -1146,9 +1200,9 @@ function AdminPanel() {
                   <input
                     type="checkbox"
                     checked={p.active !== false}
-                    onChange={e => updateProduct(idx, 'active', e.target.checked)}
+                    onChange={(e) => updateProduct(idx, 'active', e.target.checked)}
                   />
-                  <span style={{ color: p.active !== false ? '#2E7D32' : '#B41E1E', fontWeight: 'normal' }}>
+                  <span style={{ color: p.active !== false ? '#2E7D32' : '#B41E1E' }}>
                     {p.active !== false ? '✅ Actif' : '❌ Inactif'}
                   </span>
                 </label>
