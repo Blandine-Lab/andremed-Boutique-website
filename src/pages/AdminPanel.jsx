@@ -283,7 +283,6 @@ function AdminPanel() {
       is_promotion: false,
       active: true,
       rating: 0,
-      slug: '',
       created_at: new Date().toISOString()
     };
     setProducts([...products, newProduct]);
@@ -318,14 +317,6 @@ function AdminPanel() {
         if (!toUpsert.description) toUpsert.description = '';
         if (!toUpsert.brand) toUpsert.brand = '';
         if (!toUpsert.unit) toUpsert.unit = 'pièce';
-        if (!toUpsert.slug && toUpsert.name) {
-          toUpsert.slug = toUpsert.name
-            .toLowerCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-');
-        }
         
         // Gérer les valeurs numériques
         if (toUpsert.quantity === undefined || toUpsert.quantity === null) toUpsert.quantity = 0;
@@ -335,11 +326,12 @@ function AdminPanel() {
         if (toUpsert.promotion_price === '' || toUpsert.promotion_price === null) toUpsert.promotion_price = null;
         if (toUpsert.rating === undefined || toUpsert.rating === null) toUpsert.rating = 0;
         
-        // Supprimer les colonnes qui n'existent pas dans la table
+        // ✅ SUPPRIMER LES COLONNES QUI N'EXISTENT PAS
         delete toUpsert.delivery;
         delete toUpsert.warranty;
         delete toUpsert.oldPrice;
         delete toUpsert.featured;
+        delete toUpsert.slug;
         
         const { data, error } = await supabase
           .from('products')
@@ -1008,7 +1000,7 @@ function AdminPanel() {
         </section>
       )}
 
-      {/* ================= ONGLET PRODUITS (CORRIGÉ) ================= */}
+      {/* ================= ONGLET PRODUITS ================= */}
       {activeTab === 'products' && (
         <section style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
           <h2>📦 Produits</h2>
