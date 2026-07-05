@@ -263,7 +263,7 @@ function AdminPanel() {
   // ================= GESTION PRODUITS =================
   const addProduct = () => setProducts([...products, { 
     id: Date.now(), 
-    name: 'Nouveau produit', 
+    name: '', 
     category: '', 
     description: '',
     brand: '',
@@ -271,10 +271,10 @@ function AdminPanel() {
     delivery: '',
     quantity: 0, 
     price: 0, 
-    oldPrice: 0,
+    oldPrice: null,
     unit: 'pièce', 
     seuil_alerte: 10, 
-    image: '📦', 
+    image: '', 
     media: [],
     is_new: false,
     featured: false,
@@ -684,7 +684,10 @@ function AdminPanel() {
       setUploading(true);
       const url = await uploadImage(file, folder);
       setUploading(false);
-      if (url) onValueChange(url);
+      if (url) {
+        onValueChange(url);
+        console.log('✅ Image uploadée avec succès:', url);
+      }
       e.target.value = '';
     };
 
@@ -927,7 +930,7 @@ function AdminPanel() {
         </section>
       )}
 
-      {/* ================= ONGLET PRODUITS (AVEC TOUS LES CHAMPS) ================= */}
+      {/* ================= ONGLET PRODUITS (AVEC TOUS LES CHAMPS ET LABELS EN GRAS) ================= */}
       {activeTab === 'products' && (
         <section style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
           <h2>📦 Produits</h2>
@@ -938,116 +941,118 @@ function AdminPanel() {
               {/* Informations de base */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Nom du produit *</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🏷️ Nom du produit *</label>
                   <input
                     placeholder="Nom du produit"
                     value={p.name || ''}
                     onChange={e => updateProduct(idx, 'name', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Catégorie</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>📂 Catégorie</label>
                   <input
                     placeholder="Catégorie (ex: Imagerie, Laboratoire...)"
                     value={p.category || ''}
                     onChange={e => updateProduct(idx, 'category', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
                   />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '10px' }}>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Prix (€)</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>💰 Prix (€) *</label>
                   <input
                     placeholder="Prix"
                     type="number"
+                    step="0.01"
                     value={p.price || 0}
                     onChange={e => updateProduct(idx, 'price', parseFloat(e.target.value) || 0)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Ancien prix (€) - optionnel</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🏷️ Ancien prix (€) - optionnel</label>
                   <input
                     placeholder="Ancien prix (pour promo)"
                     type="number"
+                    step="0.01"
                     value={p.oldPrice || ''}
                     onChange={e => updateProduct(idx, 'oldPrice', parseFloat(e.target.value) || 0)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
                   />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '10px' }}>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Quantité en stock</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>📦 Quantité en stock</label>
                   <input
                     placeholder="Quantité"
                     type="number"
                     value={p.quantity || 0}
                     onChange={e => updateProduct(idx, 'quantity', parseInt(e.target.value) || 0)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Unité</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>📏 Unité</label>
                   <input
                     placeholder="Unité (ex: pièce, lot...)"
                     value={p.unit || 'pièce'}
                     onChange={e => updateProduct(idx, 'unit', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
                   />
                 </div>
               </div>
 
               {/* Description */}
               <div style={{ marginTop: '10px' }}>
-                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Description *</label>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>📝 Description *</label>
                 <textarea
                   placeholder="Description détaillée du produit..."
                   rows="4"
                   value={p.description || ''}
                   onChange={e => updateProduct(idx, 'description', e.target.value)}
-                  style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontFamily: 'inherit' }}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontFamily: 'inherit', fontWeight: 'normal' }}
                 />
               </div>
 
               {/* Informations supplémentaires */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '10px' }}>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Marque</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🏷️ Marque</label>
                   <input
                     placeholder="Marque"
                     value={p.brand || ''}
                     onChange={e => updateProduct(idx, 'brand', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Garantie</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🛡️ Garantie</label>
                   <input
                     placeholder="Garantie (ex: 2 ans)"
                     value={p.warranty || ''}
                     onChange={e => updateProduct(idx, 'warranty', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Délai de livraison</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🚚 Délai de livraison</label>
                   <input
                     placeholder="Délai de livraison"
                     value={p.delivery || ''}
                     onChange={e => updateProduct(idx, 'delivery', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontWeight: 'normal' }}
                   />
                 </div>
               </div>
 
               {/* Image principale */}
               <div style={{ marginTop: '10px' }}>
-                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Image principale</label>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🖼️ Image principale</label>
                 <UploadField
                   label="Image principale"
                   value={p.image}
@@ -1058,7 +1063,7 @@ function AdminPanel() {
 
               {/* Images supplémentaires */}
               <div style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
-                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Images supplémentaires</label>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>🖼️ Images supplémentaires</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px' }}>
                   {(p.media || []).map((url, imgIdx) => (
                     <div key={imgIdx} style={{ position: 'relative', display: 'inline-block' }}>
@@ -1123,7 +1128,7 @@ function AdminPanel() {
                     checked={p.is_new || false}
                     onChange={e => updateProduct(idx, 'is_new', e.target.checked)}
                   />
-                  <span style={{ color: p.is_new ? '#FF9800' : '#666' }}>
+                  <span style={{ color: p.is_new ? '#FF9800' : '#666', fontWeight: 'normal' }}>
                     {p.is_new ? '⭐ Nouveau' : 'Nouveau'}
                   </span>
                 </label>
@@ -1133,7 +1138,7 @@ function AdminPanel() {
                     checked={p.featured || false}
                     onChange={e => updateProduct(idx, 'featured', e.target.checked)}
                   />
-                  <span style={{ color: p.featured ? '#FF9800' : '#666' }}>
+                  <span style={{ color: p.featured ? '#FF9800' : '#666', fontWeight: 'normal' }}>
                     {p.featured ? '⭐ Produit vedette' : 'Produit vedette'}
                   </span>
                 </label>
@@ -1143,7 +1148,7 @@ function AdminPanel() {
                     checked={p.active !== false}
                     onChange={e => updateProduct(idx, 'active', e.target.checked)}
                   />
-                  <span style={{ color: p.active !== false ? '#2E7D32' : '#B41E1E' }}>
+                  <span style={{ color: p.active !== false ? '#2E7D32' : '#B41E1E', fontWeight: 'normal' }}>
                     {p.active !== false ? '✅ Actif' : '❌ Inactif'}
                   </span>
                 </label>
