@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
-// ✅ URL du backend (à adapter selon votre hébergement)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Configuration Telegram (identique à Services.jsx)
+const TELEGRAM_BOT_TOKEN = '8570394266:AAE1_Az0Hzot09m8u3s4Ml-EUMHQjgqunwY';
+const GROUP_CHAT_ID = '-5293060257';
 
 const ChatWidget = ({ productId, productName, onClose }) => {
   const [messages, setMessages] = useState([]);
@@ -42,6 +43,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
     return () => clearInterval(interval);
   }, [userChatId]);
 
+  // ✅ Envoyer directement à Telegram (comme dans Services.jsx)
   const sendMessage = async () => {
     if (!inputMessage.trim()) {
       setSendStatus('Veuillez écrire un message');
@@ -68,21 +70,35 @@ const ChatWidget = ({ productId, productName, onClose }) => {
     if (productName) fullMessage = `[${productName}] ${inputMessage}`;
     if (productId) fullMessage = `Produit #${productId} - ${fullMessage}`;
 
+    // ✅ Construction du message Telegram
+    const supportMessageText = `📩 NOUVEAU MESSAGE (Chat Widget)
+━━━━━━━━━━━━━━━━━━
+📄 Produit: ${productName || 'Support général'}
+🆔 ID: ${clientId}
+👤 Nom: ${userName || 'Non renseigné'}
+📧 Email: ${userEmail || 'Non renseigné'}
+💬 Message: ${fullMessage}
+
+📅 ${new Date().toLocaleString('fr-FR')}
+
+⚠️ POUR RÉPONDRE, TAPEZ:
+/reply_${clientId} Votre message ici`;
+
     try {
-      const response = await fetch(`${API_URL}/chat/send`, {
+      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: userName,
-          email: userEmail,
-          message: fullMessage,
-          userId: clientId,
+          chat_id: GROUP_CHAT_ID,
+          text: supportMessageText,
+          parse_mode: 'Markdown'
         }),
       });
+
       const data = await response.json();
-      
-      if (data.success) {
-        setUserChatId(data.userId);
+
+      if (response.ok) {
+        setUserChatId(clientId);
         setSendStatus('✅ Message envoyé ! En attente de réponse...');
         setInputMessage('');
         setIsWaitingResponse(true);
@@ -91,7 +107,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
         ));
         setTimeout(() => setSendStatus(''), 3000);
       } else {
-        throw new Error(data.error || 'Erreur inconnue');
+        throw new Error(data.description || 'Erreur Telegram');
       }
     } catch (error) {
       console.error('Erreur:', error);
@@ -107,7 +123,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
   const checkForReplies = async () => {
     if (!userChatId) return;
     try {
-      const response = await fetch(`${API_URL}/chat/updates`);
+      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
       const data = await response.json();
       
       if (data.ok && data.result) {
