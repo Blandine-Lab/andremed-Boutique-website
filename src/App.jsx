@@ -10,9 +10,8 @@ import Account from './pages/Account';
 import AdminPanel from './pages/AdminPanel';
 import ServicePage from './pages/ServicePage';
 import ContactPage from './pages/ContactPage';
-import Blog from './pages/Blog';                // Votre ancien Blog (liste de produits)
-import BlogDetail from './pages/BlogDetail';   // NOUVEAU : page d’article individuel
-// import BlogPost from './pages/BlogPost';   // Si vous ne l’utilisez plus, commentez
+import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
 import Downloads from './pages/Downloads';
 import MemberPage from './pages/MemberPage';
 import Navbar from './components/Navbar';
@@ -24,20 +23,19 @@ import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
 import OrderDetail from './pages/OrderDetail';
 import Payment from './pages/Payment';
-import Faq from './pages/Faq'; // ✅ Import de la nouvelle page FAQ
+import Faq from './pages/Faq';
 
-// Composant pour le contenu principal avec footer conditionnel
 function AppContent() {
   const location = useLocation();
-  // Cacher le footer uniquement sur la page d'accueil
-  const hideFooter = location.pathname === '/';
+  
+  // ✅ Suppression de la condition : le footer s'affiche partout
+  // const hideFooter = location.pathname === '/';
   
   return (
     <>
       <Navbar />
       <div style={{ paddingTop: '70px' }}>
         <Routes>
-          {/* Routes principales */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/shop" element={<Shop />} />
@@ -47,16 +45,9 @@ function AppContent() {
           <Route path="/account" element={<Account />} />
           <Route path="/admin-panel" element={<AdminPanel />} />
           <Route path="/product/:id" element={<ProductDetails />} />
-
-          {/* ⚠️ ORDRE IMPORTANT : d'abord la route avec paramètre */}
           <Route path="/blog/:slug" element={<BlogDetail />} />
-          {/* Ensuite la route exacte pour la liste */}
           <Route path="/blog" element={<Blog />} />
-          
-          {/* ✅ NOUVEAU : Page FAQ dynamique synchronisée avec AdminPanel */}
           <Route path="/faq" element={<Faq />} />
-          
-          {/* Routes pour les téléchargements */}
           <Route path="/downloads" element={<Downloads />} />
           <Route path="/catalog" element={<Downloads />} />
           <Route path="/catalogues" element={<Downloads />} />
@@ -66,8 +57,6 @@ function AppContent() {
           <Route path="/whitepapers" element={<Downloads />} />
           <Route path="/videos" element={<Downloads />} />
           <Route path="/webinars" element={<Downloads />} />
-          
-          {/* Routes pour la section Member (compte utilisateur) */}
           <Route path="/member/:pageKey" element={<MemberPage />} />
           <Route path="/register" element={<MemberPage />} />
           <Route path="/wishlist" element={<MemberPage />} />
@@ -78,14 +67,7 @@ function AppContent() {
           <Route path="/addresses" element={<MemberPage />} />
           <Route path="/newsletter" element={<MemberPage />} />
           <Route path="/notifications" element={<MemberPage />} />
-          
-          {/* Routes pour la section Services & Support avec paramètre */}
           <Route path="/service/:pageKey" element={<ServicePage />} />
-          
-          {/* Routes simplifiées pour Services & Support - avec redirection */}
-          {/* ❌ Supprimer la redirection /faq car maintenant elle a sa propre page */}
-          {/* <Route path="/faq" element={<Navigate to="/service/faq" replace />} /> */}
-          
           <Route path="/help" element={<Navigate to="/service/help" replace />} />
           <Route path="/join" element={<Navigate to="/service/join" replace />} />
           <Route path="/technical-support" element={<Navigate to="/service/technical-support" replace />} />
@@ -94,11 +76,7 @@ function AppContent() {
           <Route path="/warranty" element={<Navigate to="/service/warranty" replace />} />
           <Route path="/returns" element={<Navigate to="/service/returns" replace />} />
           <Route path="/feedback" element={<Navigate to="/service/feedback" replace />} />
-          
-          {/* Routes pour la section Contact avec paramètre */}
           <Route path="/contact/:pageKey" element={<ContactPage />} />
-          
-          {/* Routes simplifiées pour Contact - avec redirection */}
           <Route path="/contact-us" element={<Navigate to="/contact/contact-us" replace />} />
           <Route path="/customer-support" element={<Navigate to="/contact/customer-support" replace />} />
           <Route path="/sales-inquiries" element={<Navigate to="/contact/sales-inquiries" replace />} />
@@ -115,22 +93,14 @@ function AppContent() {
           <Route path="/press" element={<Navigate to="/contact/press" replace />} />
           <Route path="/sales" element={<Navigate to="/contact/sales" replace />} />
           <Route path="/payment/:orderId" element={<Payment />} />
-          
-          {/* Redirection par défaut pour /contact */}
           <Route path="/contact" element={<Navigate to="/contact/contact" replace />} />
-          
-          {/* Redirection par défaut pour /services vers la page services par défaut */}
           <Route path="/services" element={<Navigate to="/service/services" replace />} />
-          
-          {/* Route du panier */}
           <Route path="/cart" element={<Cart />} />
-          
-          {/* Route du détail d'une commande */}
           <Route path="/order/:id" element={<OrderDetail />} />
         </Routes>
       </div>
-      {/* Footer affiché partout SAUF sur la page d'accueil */}
-      {!hideFooter && <Footer />}
+      {/* ✅ Footer de Home affiché sur toutes les pages */}
+      <Footer />
     </>
   );
 }
