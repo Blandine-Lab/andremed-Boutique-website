@@ -28,8 +28,8 @@ import Faq from './pages/Faq';
 function AppContent() {
   const location = useLocation();
   
-  // ✅ Suppression de la condition : le footer s'affiche partout
-  // const hideFooter = location.pathname === '/';
+  // ✅ Cacher le footer uniquement sur la page d'accueil (car il est déjà dans Home.js)
+  const hideFooter = location.pathname === '/';
   
   return (
     <>
@@ -99,8 +99,8 @@ function AppContent() {
           <Route path="/order/:id" element={<OrderDetail />} />
         </Routes>
       </div>
-      {/* ✅ Footer de Home affiché sur toutes les pages */}
-      <Footer />
+      {/* ✅ Footer affiché sur toutes les pages SAUF sur la page d'accueil */}
+      {!hideFooter && <Footer />}
     </>
   );
 }
