@@ -1,7 +1,7 @@
 // src/pages/About.jsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { supabase } from '../lib/supabase'; // ✅ Client centralisé
+import { supabase } from '../lib/supabase';
 
 function About() {
   const [settings, setSettings] = useState({
@@ -12,47 +12,9 @@ function About() {
     team_members: 15,
     projects_done: 100
   });
-  const [cities, setCities] = useState([]); // ✅ Villes dynamiques
+  const [cities, setCities] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]); // ✅ dynamique
   const [loading, setLoading] = useState(true);
-
-  // ========== MEMBRES DE L'ÉQUIPE ==========
-  const teamMembers = [
-    {
-      id: 1,
-      name: "Marthe MUSIMBI",
-      role: "Comptable",
-      bio: "Une comptable assurant la gestion financière et la transparence.",
-      photo_url: "/team/Marthe.jpeg"
-    },
-    {
-      id: 2,
-      name: "Cléophas MASUDI",
-      role: "Ir Biomedical",
-      bio: "Ingénieur technicien spécialisé dans le montage et l'intégration des solutions médicales.",
-      photo_url: "/team/Cleophas.jpeg"
-    },
-    {
-      id: 3,
-      name: "Papy SIMOKO",
-      role: "Support technique & Logistique",
-      bio: "Technicien support spécialisé dans l'installation, la maintenance et l'intégration des équipements médicaux.",
-      photo_url: "/team/Papy.jpeg"
-    },
-    {
-      id: 4,
-      name: "Joël KASUMBA",
-      role: "Pharmacien",
-      bio: "Pharmacien spécialisé dans la gestion des produits de santé.",
-      photo_url: "/team/Joel.jpeg"
-    },
-    {
-      id: 5,
-      name: "Josué MWENELWATA",
-      role: "Chargé de conformité de commande",
-      bio: "Chargé de conformité de commande, garantissant la conformité des commandes aux normes et réglementations en vigueur.",
-      photo_url: "/team/Josue.jpeg"
-    }
-  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,12 +27,19 @@ function About() {
         .eq('id', 1)
         .single();
 
-      // ✅ Charger les villes actives depuis la table cities_coverage
+      // Charger les villes actives
       const { data: citiesData } = await supabase
         .from('cities_coverage')
         .select('*')
         .eq('active', true)
         .order('order_index', { ascending: true });
+
+      // ✅ Charger les membres d'équipe actifs
+      const { data: teamData } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('active', true)
+        .order('order', { ascending: true });
 
       if (settingsData) {
         setSettings({
@@ -83,9 +52,8 @@ function About() {
         });
       }
 
-      if (citiesData) {
-        setCities(citiesData);
-      }
+      if (citiesData) setCities(citiesData);
+      if (teamData) setTeamMembers(teamData);
 
       setLoading(false);
     };
@@ -93,8 +61,6 @@ function About() {
     fetchData();
   }, []);
 
-  // ========== STATISTIQUES ==========
-  // ✅ Le nombre de villes est calculé dynamiquement
   const stats = [
     { value: settings.foundation_year, suffix: "", label: "Année de fondation", image: "/cities/calendrier.png" },
     { value: cities.length, suffix: "", label: "Villes couvertes", image: "/cities/carte.png" },
@@ -134,7 +100,7 @@ function About() {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Stats */}
       <section style={styles.statsSection}>
         <div style={styles.statsGrid}>
           {stats.map((stat, i) => (
@@ -190,7 +156,7 @@ function About() {
         </div>
       </section>
 
-      {/* ✅ Présence – dynamique depuis Supabase */}
+      {/* Présence (villes dynamiques) */}
       <section style={styles.presenceSection}>
         <h2 style={styles.sectionTitle}>📍 Notre Présence</h2>
         <p style={styles.sectionSubtitle}>Une implantation multisectorielle pour être au plus proche de vos besoins</p>
@@ -201,39 +167,22 @@ function About() {
             {cities.map((city) => {
               const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(city.city_name + ', RDC')}`;
               return (
-                <a
-                  key={city.id}
-                  href={mapLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 }}
-                    className="glass-card"
-                    style={styles.presenceCard}
-                  >
+                <a key={city.id} href={mapLink} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                  <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card" style={styles.presenceCard}>
                     <div style={styles.presenceImageContainer}>
                       {city.image_url ? (
-                        <img
-                          src={city.image_url}
-                          alt={city.city_name}
-                          style={styles.presenceImage}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            const parent = e.target.parentElement;
-                            parent.style.display = 'flex';
-                            parent.style.alignItems = 'center';
-                            parent.style.justifyContent = 'center';
-                            parent.style.backgroundColor = '#0A4D8C';
-                            parent.style.color = 'white';
-                            parent.style.fontSize = '2.5rem';
-                            parent.style.fontWeight = 'bold';
-                            parent.innerText = city.city_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                          }}
-                        />
+                        <img src={city.image_url} alt={city.city_name} style={styles.presenceImage} onError={(e) => {
+                          e.target.style.display = 'none';
+                          const parent = e.target.parentElement;
+                          parent.style.display = 'flex';
+                          parent.style.alignItems = 'center';
+                          parent.style.justifyContent = 'center';
+                          parent.style.backgroundColor = '#0A4D8C';
+                          parent.style.color = 'white';
+                          parent.style.fontSize = '2.5rem';
+                          parent.style.fontWeight = 'bold';
+                          parent.innerText = city.city_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                        }} />
                       ) : (
                         <div style={{
                           width: '100%',
@@ -262,7 +211,7 @@ function About() {
         )}
       </section>
 
-      {/* Équipe */}
+      {/* ✅ Équipe dynamique */}
       <section style={styles.teamSection}>
         <h2 style={styles.sectionTitle}>👥 Notre Équipe d'Excellence</h2>
         <p style={styles.sectionSubtitle}>Nous croyons fermement que la qualité des services repose sur les compétences humaines.</p>
@@ -297,307 +246,59 @@ function About() {
 
 // ========== STYLES (inchangés) ==========
 const styles = {
-  container: {
-    minHeight: '100vh',
-    background: '#f8f9fa',
-    paddingTop: '80px'
-  },
-  hero: {
-    minHeight: '70vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden'
-  },
-  heroBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    zIndex: 0
-  },
-  heroBgImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover'
-  },
-  heroOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    background: 'linear-gradient(135deg, rgba(10,77,140,0.85), rgba(0,163,178,0.85))'
-  },
-  heroContent: {
-    textAlign: 'center',
-    zIndex: 2,
-    padding: '2rem',
-    maxWidth: '1000px',
-    margin: '0 auto',
-    color: 'white'
-  },
-  title: {
-    fontSize: '3rem',
-    marginBottom: '1rem'
-  },
-  titleAccent: {
-    background: 'linear-gradient(135deg, #FFD166, #FFF)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent'
-  },
-  subtitle: {
-    fontSize: '1.5rem',
-    marginBottom: '1rem',
-    opacity: 0.9
-  },
-  description: {
-    fontSize: '1.1rem',
-    maxWidth: '800px',
-    margin: '0 auto',
-    lineHeight: '1.6',
-    opacity: 0.9
-  },
-  statsSection: {
-    padding: '60px 20px',
-    maxWidth: '1200px',
-    margin: '0 auto'
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '2rem'
-  },
-  statCard: {
-    textAlign: 'center',
-    padding: '2rem',
-    background: 'white',
-    borderRadius: '20px',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
-  },
-  statImageContainer: {
-    width: '60px',
-    height: '60px',
-    margin: '0 auto 1rem',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  statImage: {
-    maxWidth: '100%',
-    maxHeight: '100%',
-    objectFit: 'contain'
-  },
-  statValue: {
-    fontSize: '2.5rem',
-    fontWeight: 'bold',
-    color: '#0A4D8C',
-    marginBottom: '0.5rem'
-  },
-  statLabel: {
-    fontSize: '0.9rem',
-    color: '#6C757D'
-  },
-  missionSection: {
-    padding: '60px 20px',
-    background: '#f0f4f8'
-  },
-  missionContainer: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-    gap: '2rem',
-    maxWidth: '1200px',
-    margin: '0 auto'
-  },
-  missionCard: {
-    padding: '2rem',
-    background: 'white',
-    borderRadius: '20px',
-    textAlign: 'center'
-  },
-  missionImageContainer: {
-    width: '100%',
-    maxWidth: '200px',
-    margin: '0 auto 1rem'
-  },
-  missionImage: {
-    width: '100%',
-    height: 'auto',
-    objectFit: 'contain'
-  },
-  missionText: {
-    fontSize: '1rem',
-    lineHeight: '1.6',
-    marginBottom: '1.5rem',
-    color: '#1A2A3A'
-  },
-  missionPoints: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '1rem'
-  },
-  visionCard: {
-    padding: '2rem',
-    background: 'white',
-    borderRadius: '20px',
-    textAlign: 'center'
-  },
-  visionImageContainer: {
-    width: '100%',
-    maxWidth: '200px',
-    margin: '0 auto 1rem'
-  },
-  visionImage: {
-    width: '100%',
-    height: 'auto',
-    objectFit: 'contain'
-  },
-  sectionTitle: {
-    fontSize: '1.8rem',
-    color: '#0A4D8C',
-    marginBottom: '1rem'
-  },
-  visionText: {
-    fontSize: '1rem',
-    lineHeight: '1.6',
-    color: '#1A2A3A'
-  },
-  valuesSection: {
-    padding: '60px 20px',
-    textAlign: 'center',
-    maxWidth: '1200px',
-    margin: '0 auto'
-  },
-  sectionSubtitle: {
-    fontSize: '1rem',
-    color: '#6C757D',
-    marginBottom: '3rem'
-  },
-  valuesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '2rem'
-  },
-  valueCard: {
-    padding: '2rem',
-    background: 'white',
-    borderRadius: '20px',
-    textAlign: 'center'
-  },
-  valueIcon: {
-    fontSize: '2.5rem',
-    marginBottom: '1rem'
-  },
-  valueTitle: {
-    fontSize: '1.2rem',
-    color: '#0A4D8C',
-    marginBottom: '0.5rem'
-  },
-  valueDesc: {
-    fontSize: '0.85rem',
-    color: '#6C757D'
-  },
-  presenceSection: {
-    padding: '60px 20px',
-    background: '#f0f4f8',
-    textAlign: 'center'
-  },
-  presenceGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '2rem',
-    maxWidth: '1200px',
-    margin: '0 auto'
-  },
-  presenceCard: {
-    padding: '1.5rem',
-    background: 'white',
-    borderRadius: '20px',
-    textAlign: 'center',
-    transition: 'transform 0.3s ease',
-    cursor: 'pointer'
-  },
-  presenceImageContainer: {
-    width: '100%',
-    height: '150px',
-    marginBottom: '1rem',
-    overflow: 'hidden',
-    borderRadius: '12px'
-  },
-  presenceImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    transition: 'transform 0.3s ease'
-  },
-  presenceIcon: {
-    fontSize: '2rem',
-    marginBottom: '0.5rem'
-  },
-  presenceCity: {
-    fontSize: '1.2rem',
-    color: '#0A4D8C',
-    marginBottom: '0.5rem'
-  },
-  presenceRegion: {
-    fontSize: '0.85rem',
-    color: '#00A3B2',
-    marginBottom: '0.5rem'
-  },
-  presenceAddress: {
-    fontSize: '0.75rem',
-    color: '#6C757D'
-  },
-  teamSection: {
-    padding: '60px 20px',
-    textAlign: 'center',
-    maxWidth: '1200px',
-    margin: '0 auto'
-  },
-  teamGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '2rem'
-  },
-  teamCard: {
-    padding: '1.5rem',
-    background: 'white',
-    borderRadius: '20px',
-    textAlign: 'center',
-    transition: 'transform 0.3s ease',
-    cursor: 'pointer'
-  },
-  teamImageContainer: {
-    width: '120px',
-    height: '120px',
-    margin: '0 auto 1rem',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    border: '3px solid #0A4D8C',
-    boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
-  },
-  teamImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover'
-  },
-  teamName: {
-    fontSize: '1.1rem',
-    color: '#0A4D8C',
-    marginBottom: '0.3rem'
-  },
-  teamRole: {
-    fontSize: '0.85rem',
-    color: '#00A3B2',
-    marginBottom: '0.5rem',
-    fontWeight: 'bold'
-  },
-  teamDesc: {
-    fontSize: '0.8rem',
-    color: '#6C757D'
-  }
+  container: { minHeight: '100vh', background: '#f8f9fa', paddingTop: '80px' },
+  hero: { minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' },
+  heroBackground: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 },
+  heroBgImage: { width: '100%', height: '100%', objectFit: 'cover' },
+  heroOverlay: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(135deg, rgba(10,77,140,0.85), rgba(0,163,178,0.85))' },
+  heroContent: { textAlign: 'center', zIndex: 2, padding: '2rem', maxWidth: '1000px', margin: '0 auto', color: 'white' },
+  title: { fontSize: '3rem', marginBottom: '1rem' },
+  titleAccent: { background: 'linear-gradient(135deg, #FFD166, #FFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' },
+  subtitle: { fontSize: '1.5rem', marginBottom: '1rem', opacity: 0.9 },
+  description: { fontSize: '1.1rem', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6', opacity: 0.9 },
+  statsSection: { padding: '60px 20px', maxWidth: '1200px', margin: '0 auto' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' },
+  statCard: { textAlign: 'center', padding: '2rem', background: 'white', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' },
+  statImageContainer: { width: '60px', height: '60px', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  statImage: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' },
+  statValue: { fontSize: '2.5rem', fontWeight: 'bold', color: '#0A4D8C', marginBottom: '0.5rem' },
+  statLabel: { fontSize: '0.9rem', color: '#6C757D' },
+  missionSection: { padding: '60px 20px', background: '#f0f4f8' },
+  missionContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto' },
+  missionCard: { padding: '2rem', background: 'white', borderRadius: '20px', textAlign: 'center' },
+  missionImageContainer: { width: '100%', maxWidth: '200px', margin: '0 auto 1rem' },
+  missionImage: { width: '100%', height: 'auto', objectFit: 'contain' },
+  missionText: { fontSize: '1rem', lineHeight: '1.6', marginBottom: '1.5rem', color: '#1A2A3A' },
+  missionPoints: { display: 'flex', flexWrap: 'wrap', gap: '1rem' },
+  visionCard: { padding: '2rem', background: 'white', borderRadius: '20px', textAlign: 'center' },
+  visionImageContainer: { width: '100%', maxWidth: '200px', margin: '0 auto 1rem' },
+  visionImage: { width: '100%', height: 'auto', objectFit: 'contain' },
+  sectionTitle: { fontSize: '1.8rem', color: '#0A4D8C', marginBottom: '1rem' },
+  visionText: { fontSize: '1rem', lineHeight: '1.6', color: '#1A2A3A' },
+  valuesSection: { padding: '60px 20px', textAlign: 'center', maxWidth: '1200px', margin: '0 auto' },
+  sectionSubtitle: { fontSize: '1rem', color: '#6C757D', marginBottom: '3rem' },
+  valuesGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '2rem' },
+  valueCard: { padding: '2rem', background: 'white', borderRadius: '20px', textAlign: 'center' },
+  valueIcon: { fontSize: '2.5rem', marginBottom: '1rem' },
+  valueTitle: { fontSize: '1.2rem', color: '#0A4D8C', marginBottom: '0.5rem' },
+  valueDesc: { fontSize: '0.85rem', color: '#6C757D' },
+  presenceSection: { padding: '60px 20px', background: '#f0f4f8', textAlign: 'center' },
+  presenceGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto' },
+  presenceCard: { padding: '1.5rem', background: 'white', borderRadius: '20px', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' },
+  presenceImageContainer: { width: '100%', height: '150px', marginBottom: '1rem', overflow: 'hidden', borderRadius: '12px' },
+  presenceImage: { width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' },
+  presenceIcon: { fontSize: '2rem', marginBottom: '0.5rem' },
+  presenceCity: { fontSize: '1.2rem', color: '#0A4D8C', marginBottom: '0.5rem' },
+  presenceRegion: { fontSize: '0.85rem', color: '#00A3B2', marginBottom: '0.5rem' },
+  presenceAddress: { fontSize: '0.75rem', color: '#6C757D' },
+  teamSection: { padding: '60px 20px', textAlign: 'center', maxWidth: '1200px', margin: '0 auto' },
+  teamGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' },
+  teamCard: { padding: '1.5rem', background: 'white', borderRadius: '20px', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' },
+  teamImageContainer: { width: '120px', height: '120px', margin: '0 auto 1rem', borderRadius: '50%', overflow: 'hidden', border: '3px solid #0A4D8C', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' },
+  teamImage: { width: '100%', height: '100%', objectFit: 'cover' },
+  teamName: { fontSize: '1.1rem', color: '#0A4D8C', marginBottom: '0.3rem' },
+  teamRole: { fontSize: '0.85rem', color: '#00A3B2', marginBottom: '0.5rem', fontWeight: 'bold' },
+  teamDesc: { fontSize: '0.8rem', color: '#6C757D' }
 };
 
 export default About;
