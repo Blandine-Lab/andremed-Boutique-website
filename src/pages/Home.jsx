@@ -200,62 +200,61 @@ function Home() {
   };
 
   // ========== NEWSLETTER : ENVOI GROUPÉ (ADMIN) ==========
-const handleBulkSend = async () => {
-  // Utilisation de la variable d'environnement pour l'URL du backend
-  const backendUrl = import.meta.env.VITE_NEWSLETTER_BACKEND_URL || 'https://andremed-email-backend.onrender.com/api/send-emails';
+  const handleBulkSend = async () => {
+    const backendUrl = import.meta.env.VITE_NEWSLETTER_BACKEND_URL || 'https://andremed-email-backend.onrender.com/api/send-emails';
 
-  if (adminPassword.trim() !== '@M@thurkayo219901990@@@@1') {
-    setBulkStatus('❌ Mot de passe administrateur incorrect.');
-    return;
-  }
-  if (!bulkSubject.trim() || !bulkMessage.trim()) {
-    setBulkStatus('❌ Veuillez remplir le sujet et le message.');
-    return;
-  }
-  if (subscribedEmails.length === 0) {
-    setBulkStatus('❌ Aucun abonné à la newsletter.');
-    return;
-  }
-  setBulkSending(true);
-  setBulkStatus(`📧 Envoi en cours à ${subscribedEmails.length} abonné(s)...`);
-  try {
-    const response = await fetch(backendUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        recipients: subscribedEmails,
-        subject: bulkSubject,
-        message: bulkMessage,
-        adminPassword: adminPassword,
-      }),
-    });
-    const data = await response.json();
-    if (data.success) {
-      setBulkStatus(`✅ Terminé : ${data.successCount} succès, ${data.failCount} échecs.`);
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    if (adminPassword.trim() !== '@M@thurkayo219901990@@@@1') {
+      setBulkStatus('❌ Mot de passe administrateur incorrect.');
+      return;
+    }
+    if (!bulkSubject.trim() || !bulkMessage.trim()) {
+      setBulkStatus('❌ Veuillez remplir le sujet et le message.');
+      return;
+    }
+    if (subscribedEmails.length === 0) {
+      setBulkStatus('❌ Aucun abonné à la newsletter.');
+      return;
+    }
+    setBulkSending(true);
+    setBulkStatus(`📧 Envoi en cours à ${subscribedEmails.length} abonné(s)...`);
+    try {
+      const response = await fetch(backendUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: GROUP_CHAT_ID,
-          text: `📢 Envoi groupé via Brevo : ${data.successCount} destinataires. Sujet : "${bulkSubject}"`
-        })
+          recipients: subscribedEmails,
+          subject: bulkSubject,
+          message: bulkMessage,
+          adminPassword: adminPassword,
+        }),
       });
-    } else {
-      setBulkStatus(`❌ Erreur serveur : ${data.error}`);
+      const data = await response.json();
+      if (data.success) {
+        setBulkStatus(`✅ Terminé : ${data.successCount} succès, ${data.failCount} échecs.`);
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: GROUP_CHAT_ID,
+            text: `📢 Envoi groupé via Brevo : ${data.successCount} destinataires. Sujet : "${bulkSubject}"`
+          })
+        });
+      } else {
+        setBulkStatus(`❌ Erreur serveur : ${data.error}`);
+      }
+    } catch (error) {
+      console.error(error);
+      setBulkStatus(`❌ Impossible de contacter le serveur backend.`);
     }
-  } catch (error) {
-    console.error(error);
-    setBulkStatus(`❌ Impossible de contacter le serveur backend.`);
-  }
-  setBulkSending(false);
-  setTimeout(() => {
-    setShowBulkModal(false);
-    setBulkSubject('');
-    setBulkMessage('');
-    setAdminPassword('');
-    setBulkStatus('');
-  }, 4000);
-};
+    setBulkSending(false);
+    setTimeout(() => {
+      setShowBulkModal(false);
+      setBulkSubject('');
+      setBulkMessage('');
+      setAdminPassword('');
+      setBulkStatus('');
+    }, 4000);
+  };
   // ========== SOUTIEN ==========
   const sendSupportToTelegram = async (formData) => {
     const typeLabel = formData.type === 'don' ? '💝 Don' : formData.type === 'partenariat' ? '🤝 Partenariat' : '📝 Autre';
@@ -1304,11 +1303,6 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
               <li><Link to="/terms">Terms of Service</Link></li>
               <li><Link to="/sitemap">Sitemap</Link></li>
               <li><Link to="/accessibility">Accessibility</Link></li>
-              {/* ===== AJOUT DES EMAILS ===== */}
-              <li><a href="mailto:contact@andremed.org" style={{ color: 'rgba(255,255,255,0.9)' }}>📧 contact@andremed.org</a></li>
-              <li><a href="mailto:supporttechn.log@andremed.org" style={{ color: 'rgba(255,255,255,0.9)' }}>📦 Commandes & Livraison</a></li>
-              <li><a href="mailto:admin.finance@andremed.org" style={{ color: 'rgba(255,255,255,0.9)' }}>💰 Administration & Finance</a></li>
-              <li><a href="mailto:andre.kabe@andremed.org" style={{ color: 'rgba(255,255,255,0.9)' }}>👔 Direction</a></li>
             </ul>
             <div style={styles.socialLinks}>
               <a href={settings.facebook_url || "https://facebook.com"} target="_blank" rel="noopener noreferrer" style={styles.socialIcon}>
@@ -1330,6 +1324,16 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
                 <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" style={{ width: '28px', height: '28px' }} />
               </a>
             </div>
+          </div>
+          {/* NOUVELLE COLONNE INFORMATIONS AVEC LES EMAILS */}
+          <div style={styles.footerColumn}>
+            <h3 style={styles.footerTitle}>Informations</h3>
+            <ul style={styles.footerList}>
+              <li><a href="mailto:contact@andremed.org" style={{ color: '#FFD166', textDecoration: 'none' }}>📧 contact@andremed.org</a> (Général)</li>
+              <li><a href="mailto:supporttechn.log@andremed.org" style={{ color: '#FFD166', textDecoration: 'none' }}>📦 supporttechn.log@andremed.org</a> (Commandes & Livraison)</li>
+              <li><a href="mailto:admin.finance@andremed.org" style={{ color: '#FFD166', textDecoration: 'none' }}>💰 admin.finance@andremed.org</a> (Administration & Finance)</li>
+              <li><a href="mailto:andre.kabe@andremed.org" style={{ color: '#FFD166', textDecoration: 'none' }}>👔 andre.kabe@andremed.org</a> (Direction)</li>
+            </ul>
           </div>
         </div>
         <div style={styles.footerBottom}>
