@@ -9,7 +9,7 @@ function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedImage, setSelectedImage] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [showZoom, setShowZoom] = useState(false);
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
@@ -28,15 +28,7 @@ function ProductDetails() {
         if (!data) throw new Error('Produit non trouvé');
 
         setProduct(data);
-
-        // ===== Extraire l'image principale =====
-        let mainImage = data.image;
-        if (!mainImage && data.media && data.media.length > 0) {
-          // Si media est un tableau d'objets, prendre le premier .url
-          const firstMedia = data.media[0];
-          mainImage = typeof firstMedia === 'string' ? firstMedia : firstMedia?.url || null;
-        }
-        setSelectedImage(mainImage);
+        setCurrentIndex(0);
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -48,16 +40,15 @@ function ProductDetails() {
     if (id) fetchProduct();
   }, [id]);
 
-  // ===== Obtenir la liste des URLs d'images =====
+  // ===== Extraire les URLs des images =====
   const getImageUrls = () => {
     if (!product) return [];
 
     if (product.media && Array.isArray(product.media) && product.media.length > 0) {
-      // Extraire les URLs, qu'elles soient sous forme d'objets ou de chaînes
       return product.media.map(item => {
         if (typeof item === 'string') return item;
         return item?.url || null;
-      }).filter(Boolean); // enlever les null/undefined
+      }).filter(Boolean);
     }
 
     if (product.image) {
@@ -68,6 +59,18 @@ function ProductDetails() {
   };
 
   const imageUrls = getImageUrls();
+  const currentImage = imageUrls[currentIndex] || null;
+
+  // ===== Navigation =====
+  const nextImage = () => {
+    if (imageUrls.length === 0) return;
+    setCurrentIndex((prev) => (prev + 1) % imageUrls.length);
+  };
+
+  const prevImage = () => {
+    if (imageUrls.length === 0) return;
+    setCurrentIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length);
+  };
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
@@ -104,20 +107,46 @@ function ProductDetails() {
       <div style={styles.productLayout}>
         {/* ===== GALERIE D'IMAGES ===== */}
         <div style={styles.gallery}>
-          <div style={styles.mainImageContainer} onClick={() => setShowZoom(true)}>
-            {selectedImage ? (
-              <img
-                src={selectedImage}
-                alt={product.name}
-                style={styles.mainImage}
-                onError={(e) => { e.target.src = '/placeholder.png'; }}
-              />
+          <div style={styles.mainImageWrapper}>
+            {currentImage ? (
+              <>
+                <img
+                  src={currentImage}
+                  alt={product.name}
+                  style={styles.mainImage}
+                  onClick={() => setShowZoom(true)}
+                  onError={(e) => { e.target.src = '/placeholder.png'; }}
+                />
+                {/* Flèches de navigation (si plus d'une image) */}
+                {imageUrls.length > 1 && (
+                  <>
+                    <button
+                      style={{ ...styles.navButton, left: '10px' }}
+                      onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                      aria-label="Image précédente"
+                    >
+                      ◀
+                    </button>
+                    <button
+                      style={{ ...styles.navButton, right: '10px' }}
+                      onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                      aria-label="Image suivante"
+                    >
+                      ▶
+                    </button>
+                    <div style={styles.counter}>
+                      {currentIndex + 1} / {imageUrls.length}
+                    </div>
+                  </>
+                )}
+                <div style={styles.zoomHint}>🔍 Cliquer pour zoomer</div>
+              </>
             ) : (
               <div style={styles.noImage}>Aucune image</div>
             )}
-            <div style={styles.zoomHint}>🔍 Cliquer pour zoomer</div>
           </div>
 
+          {/* Miniatures */}
           {imageUrls.length > 1 && (
             <div style={styles.thumbnails}>
               {imageUrls.map((url, idx) => (
@@ -127,9 +156,9 @@ function ProductDetails() {
                   alt={`${product.name} - ${idx+1}`}
                   style={{
                     ...styles.thumbnail,
-                    border: selectedImage === url ? '3px solid #0A4D8C' : '1px solid #ddd'
+                    border: currentIndex === idx ? '3px solid #0A4D8C' : '1px solid #ddd'
                   }}
-                  onClick={() => setSelectedImage(url)}
+                  onClick={() => setCurrentIndex(idx)}
                   onError={(e) => { e.target.src = '/placeholder.png'; }}
                 />
               ))}
@@ -187,12 +216,31 @@ function ProductDetails() {
       </div>
 
       {/* ===== MODALE DE ZOOM ===== */}
-      {showZoom && selectedImage && (
+      {showZoom && currentImage && (
         <div style={styles.modalOverlay} onClick={() => setShowZoom(false)}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <button style={styles.closeBtn} onClick={() => setShowZoom(false)}>✕</button>
+            {imageUrls.length > 1 && (
+              <>
+                <button
+                  style={{ ...styles.navButtonModal, left: '20px' }}
+                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                >
+                  ◀
+                </button>
+                <button
+                  style={{ ...styles.navButtonModal, right: '20px' }}
+                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                >
+                  ▶
+                </button>
+                <div style={styles.counterModal}>
+                  {currentIndex + 1} / {imageUrls.length}
+                </div>
+              </>
+            )}
             <img
-              src={selectedImage}
+              src={currentImage}
               alt={product.name}
               style={styles.zoomedImage}
               onError={(e) => { e.target.src = '/placeholder.png'; }}
@@ -205,7 +253,7 @@ function ProductDetails() {
   );
 }
 
-// ========== STYLES (inchangés) ==========
+// ========== STYLES ==========
 const styles = {
   container: {
     maxWidth: '1200px',
@@ -232,15 +280,15 @@ const styles = {
     flexDirection: 'column',
     gap: '1rem',
   },
-  mainImageContainer: {
+  mainImageWrapper: {
     position: 'relative',
     width: '100%',
     paddingTop: '100%',
     backgroundColor: '#f8f9fa',
     borderRadius: '12px',
     overflow: 'hidden',
-    cursor: 'pointer',
     border: '1px solid #eee',
+    cursor: 'pointer',
   },
   mainImage: {
     position: 'absolute',
@@ -250,6 +298,66 @@ const styles = {
     height: '100%',
     objectFit: 'contain',
     transition: 'transform 0.3s ease',
+  },
+  navButton: {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'rgba(0,0,0,0.5)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '50%',
+    width: '40px',
+    height: '40px',
+    fontSize: '1.2rem',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background 0.2s',
+    zIndex: 2,
+  },
+  navButtonModal: {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'rgba(255,255,255,0.3)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '50%',
+    width: '50px',
+    height: '50px',
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background 0.2s',
+    zIndex: 10001,
+  },
+  counter: {
+    position: 'absolute',
+    bottom: '15px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: 'rgba(0,0,0,0.6)',
+    color: 'white',
+    padding: '4px 12px',
+    borderRadius: '20px',
+    fontSize: '0.8rem',
+    zIndex: 2,
+  },
+  counterModal: {
+    position: 'absolute',
+    bottom: '70px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: 'rgba(0,0,0,0.6)',
+    color: 'white',
+    padding: '6px 16px',
+    borderRadius: '20px',
+    fontSize: '0.9rem',
+    zIndex: 10001,
   },
   zoomHint: {
     position: 'absolute',
@@ -261,6 +369,7 @@ const styles = {
     borderRadius: '20px',
     fontSize: '0.7rem',
     opacity: 0.8,
+    zIndex: 2,
   },
   noImage: {
     display: 'flex',
@@ -384,6 +493,9 @@ const styles = {
     maxWidth: '90%',
     maxHeight: '90%',
     backgroundColor: 'transparent',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   closeBtn: {
     position: 'absolute',
@@ -395,9 +507,10 @@ const styles = {
     fontSize: '2rem',
     cursor: 'pointer',
     padding: '0 10px',
+    zIndex: 10001,
   },
   zoomedImage: {
-    maxWidth: '100%',
+    maxWidth: '90vw',
     maxHeight: '80vh',
     objectFit: 'contain',
     borderRadius: '8px',
@@ -409,6 +522,10 @@ const styles = {
     textAlign: 'center',
     marginTop: '1rem',
     fontSize: '0.8rem',
+    position: 'absolute',
+    bottom: '-30px',
+    left: '50%',
+    transform: 'translateX(-50%)',
   },
   loadingContainer: {
     textAlign: 'center',
