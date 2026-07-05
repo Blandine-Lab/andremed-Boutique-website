@@ -1,52 +1,13 @@
+// src/pages/Realisations.jsx
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-
-// Données des projets (images)
-const projectsData = {
-  kalememi: {
-    label: 'Kalememi',
-    images: ['K1.jpeg', 'K2.png', 'K23.png', 'K12.jpeg', 'K11.jpeg', 'K22.png']
-  },
-  chBunia: {
-    label: 'CH Bunia-Cité',
-    images: ['B1.jpeg', 'B2.jpeg']
-  },
-  radioDentaire: {
-    label: 'Radio dentaire - HGR Bunia',
-    images: ['G1.jpeg', 'G2.jpeg', 'G3.jpeg', 'G4.jpeg', 'G5.jpeg']
-  },
-  cliniqueLubumbashi: {
-    label: 'Clinique de Lubumbashi',
-    images: ['LS1.jpeg', 'LS2.jpeg', 'LS3.jpeg']
-  },
-  polycliniqueCitadelle: {
-    label: 'Polyclinique Citadelle (Néonatalogie)',
-    images: ['c1.jpeg', 'c2.jpeg', 'c3.jpeg', 'c4.jpeg', 'c12.jpeg', 'c13.jpeg', 'c14.jpeg']
-  },
-  consommables: {
-    label: 'Ventes de consommables',
-    images: ['con1.jpeg', 'con2.jpeg', 'con3.jpeg', 'con4.jpeg', 'con5.jpeg']
-  },
-  cliniqueSommet: {
-    label: 'Clinique Sommet du pouvoir (Dr Sumbu)',
-    images: ['cli1.jpeg', 'cli2.jpeg', 'cli3.jpeg', 'cli4.jpeg', 'cli5.jpeg']
-  },
-  HopitalgeneraldeKinshasa: {
-    label: 'Hopital general de Kinshasa',
-    images: ['cc1.jpeg', 'cc2.jpeg', 'cc3.jpeg', 'cc4.jpeg', 'cc5.jpeg']
-  },
-  radiologiealhopitaldeKolwezi: {
-    label: 'hopital de Kolwezi',
-    images: ['ccc1.jpeg', 'ccc2.jpeg', 'ccc3.jpeg', 'ccc4.jpeg', 'ccc5.jpeg']
-  },
-  CentreHospitalierNotredamedAfriqueMONTCARMELGOMA: {
-    label: 'hopital MONT CARMEL GOMA',
-    images: ['cccc1.jpeg', 'cccc2.jpeg', 'cccc3.jpeg', 'cccc4.jpeg', 'cccc5.jpeg']
-  }
-};
+import { supabase } from '../lib/supabase';
 
 function Realisations() {
+  const [realisations, setRealisations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   // Vidéo tournante (4 vidéos)
   const realisationVideos = ['/Livraison1.mp4', '/Livraison2.mp4', '/Livraison3.mp4', '/Livraison4.mp4'];
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
@@ -56,6 +17,27 @@ function Realisations() {
       setCurrentVideoIndex((prev) => (prev + 1) % realisationVideos.length);
     }, 8000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Charger les réalisations depuis Supabase
+  useEffect(() => {
+    const fetchRealisations = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('realisations')
+        .select('*')
+        .eq('active', true)
+        .order('order', { ascending: true });
+
+      if (error) {
+        console.error('Erreur chargement réalisations:', error);
+      } else {
+        setRealisations(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchRealisations();
   }, []);
 
   // Compteurs (statistiques)
@@ -112,7 +94,6 @@ function Realisations() {
               <source src={realisationVideos[currentVideoIndex]} type="video/mp4" />
             </motion.video>
           </AnimatePresence>
-          {/* Aucun overlay ici */}
         </div>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -157,34 +138,49 @@ function Realisations() {
         </div>
       </section>
 
-      {/* Galerie des réalisations (sans scale, seulement ombre) */}
+      {/* Galerie des réalisations (dynamique depuis Supabase) */}
       <section style={styles.gallerySection}>
         <h2 style={styles.sectionTitle}>🏆 Nos Réalisations Concrètes</h2>
         <p style={styles.sectionSubtitle}>Découvrez nos livraisons et installations à travers la RDC</p>
-        <div style={styles.projectsList}>
-          {Object.entries(projectsData).map(([key, project]) => (
-            <div key={key} style={styles.projectCard}>
-              <h3 style={styles.projectTitle}>{project.label}</h3>
-              <div style={styles.galleryGrid}>
-                {project.images.map((img, idx) => (
-                  <div
-                    key={idx}
-                    style={styles.galleryItem}
-                    className="gallery-item"
-                  >
-                    <img
-                      src={`/${img}`}
-                      alt={`${project.label} ${idx + 1}`}
-                      style={styles.galleryImage}
-                      loading="eager"
-                      onError={(e) => { e.target.src = '/placeholder.png'; }}
-                    />
-                  </div>
-                ))}
+
+        {loading ? (
+          <p style={{ textAlign: 'center', padding: '2rem' }}>Chargement des réalisations...</p>
+        ) : realisations.length === 0 ? (
+          <p style={{ textAlign: 'center', padding: '2rem', color: '#6C757D' }}>
+            Aucune réalisation enregistrée pour le moment.
+          </p>
+        ) : (
+          <div style={styles.projectsList}>
+            {realisations.map((project) => (
+              <div key={project.id} style={styles.projectCard}>
+                <h3 style={styles.projectTitle}>{project.project_label}</h3>
+                <div style={styles.galleryGrid}>
+                  {project.images && project.images.length > 0 ? (
+                    project.images.map((imgUrl, idx) => (
+                      <div
+                        key={idx}
+                        style={styles.galleryItem}
+                        className="gallery-item"
+                      >
+                        <img
+                          src={imgUrl}
+                          alt={`${project.project_label} ${idx + 1}`}
+                          style={styles.galleryImage}
+                          loading="lazy"
+                          onError={(e) => { e.target.src = '/placeholder.png'; }}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#999' }}>
+                      Aucune image pour ce projet.
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Section Impact */}
@@ -236,6 +232,7 @@ function Realisations() {
   );
 }
 
+// ========== STYLES (inchangés) ==========
 const styles = {
   container: {
     minHeight: '100vh',
