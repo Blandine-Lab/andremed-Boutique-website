@@ -1,8 +1,7 @@
 // src/pages/AdminPanel.js
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import emailjs from '@emailjs/browser'; // ✅ Import EmailJS
-// ✅ Initialisation de la clé publique EmailJS
+import emailjs from '@emailjs/browser';
 emailjs.init(import.meta.env.VITE_EMAILJS_USER_ID);
 
 function AdminPanel() {
@@ -32,9 +31,8 @@ function AdminPanel() {
   const [events, setEvents] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [newsletter, setNewsletter] = useState([]);
-  const [payments, setPayments] = useState([]); // ✅ AJOUT
+  const [payments, setPayments] = useState([]);
 
-  // ✅ États pour le suivi des commandes
   const [orderStatuses, setOrderStatuses] = useState({});
   const [orderComments, setOrderComments] = useState({});
 
@@ -76,7 +74,7 @@ function AdminPanel() {
     return data.publicUrl;
   };
 
-  // ================= ENVOI D'EMAIL AVEC EMAILJS (AMÉLIORÉ) =================
+  // ================= ENVOI D'EMAIL AVEC EMAILJS =================
   const sendOrderStatusEmail = async (order, newStatus, comment) => {
     const statusLabels = {
       'commande_confirmee': 'Commande confirmée',
@@ -91,10 +89,7 @@ function AdminPanel() {
     };
 
     const statusLabel = statusLabels[newStatus] || newStatus;
-
-    // ✅ Récupérer l'email du destinataire (avec fallback)
     const recipientEmail = order.email || order.user_email;
-    
     if (!recipientEmail) {
       console.warn(`❌ Aucun email trouvé pour la commande #${order.order_number}`);
       return false;
@@ -110,17 +105,16 @@ function AdminPanel() {
       comment: comment || '',
       account_link: `${window.location.origin}/account`,
       from_name: 'Andremed Medical',
-      from_email: 'contact@andremed.org'  // ← adresse déjà vérifiée dans Brevo
+      from_email: 'contact@andremed.org'
     };
 
     try {
       const result = await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,   // service_silnk0c
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,  // template_ffjhp3e
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
         templateParams,
         import.meta.env.VITE_EMAILJS_USER_ID
       );
-
       if (result.status === 200) {
         console.log('✅ Email envoyé avec succès');
         return true;
@@ -159,7 +153,6 @@ function AdminPanel() {
     const { data: eventsData } = await supabase.from('events').select('*').order('date', { ascending: false });
     const { data: jobsData } = await supabase.from('jobs').select('*').order('created_at', { ascending: false });
     const { data: newsletterData } = await supabase.from('newsletter_subscribers').select('*').order('subscribed_at', { ascending: false });
-    // ✅ CHARGEMENT DES PAIEMENTS
     const { data: paymentsData } = await supabase
       .from('payments')
       .select('*, orders(order_number, user_name, email)')
@@ -186,7 +179,7 @@ function AdminPanel() {
     setEvents(eventsData || []);
     setJobs(jobsData || []);
     setNewsletter(newsletterData || []);
-    setPayments(paymentsData || []); // ✅
+    setPayments(paymentsData || []);
     
     setLoading(false);
   };
@@ -277,7 +270,7 @@ function AdminPanel() {
     unit: 'pièce', 
     seuil_alerte: 10, 
     image: '📦', 
-    media: [],  // ← tableau pour les images supplémentaires
+    media: [],
     is_new: false, 
     active: true 
   }]);
@@ -776,7 +769,6 @@ function AdminPanel() {
         <button onClick={() => setActiveTab('events')} style={tabStyle('events')}>📅 Événements</button>
         <button onClick={() => setActiveTab('jobs')} style={tabStyle('jobs')}>💼 Offres d'emploi</button>
         <button onClick={() => setActiveTab('newsletter')} style={tabStyle('newsletter')}>📧 Newsletter</button>
-        {/* ✅ NOUVEAU BOUTON PAIEMENTS */}
         <button onClick={() => setActiveTab('payments')} style={tabStyle('payments')}>💳 Paiements</button>
       </div>
 
@@ -825,6 +817,10 @@ function AdminPanel() {
           <h2>🏢 À propos & coordonnées</h2>
           <input placeholder="Titre À propos" value={settings.about_title || ''} onChange={e => setSettings({ ...settings, about_title: e.target.value })} style={{ width: '100%', marginBottom: '8px' }} />
           <textarea placeholder="Description" rows="3" value={settings.about_description || ''} onChange={e => setSettings({ ...settings, about_description: e.target.value })} style={{ width: '100%', marginBottom: '8px' }} />
+          
+          {/* ✅ AJOUT : Mission et Vision */}
+          <textarea placeholder="Mission" rows="3" value={settings.about_mission || ''} onChange={e => setSettings({ ...settings, about_mission: e.target.value })} style={{ width: '100%', marginBottom: '8px' }} />
+          <textarea placeholder="Vision" rows="3" value={settings.about_vision || ''} onChange={e => setSettings({ ...settings, about_vision: e.target.value })} style={{ width: '100%', marginBottom: '8px' }} />
 
           <h4 style={{ marginTop: '16px' }}>📊 Statistiques de la page À propos</h4>
           <input 
@@ -955,7 +951,6 @@ function AdminPanel() {
                 style={{ width: '100%', marginBottom: '8px' }}
               />
 
-              {/* 🔵 Image principale */}
               <UploadField
                 label="Image principale"
                 value={p.image}
@@ -963,7 +958,6 @@ function AdminPanel() {
                 folder="products"
               />
 
-              {/* 🟢 Images supplémentaires */}
               <div style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
                 <label><strong>Images supplémentaires :</strong></label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px' }}>
@@ -1123,7 +1117,7 @@ function AdminPanel() {
         </section>
       )}
 
-      {/* ================= ONGLET COMMANDES (CORRIGÉ) ================= */}
+      {/* ================= ONGLET COMMANDES ================= */}
       {activeTab === 'orders' && (
         <section style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
           <h2>📦 Commandes clients</h2>
@@ -1549,9 +1543,7 @@ function AdminPanel() {
                     <>
                       <button
                         onClick={async () => {
-                          // Valider le paiement
                           await supabase.from('payments').update({ status: 'verified', verified_at: new Date().toISOString() }).eq('id', payment.id);
-                          // Optionnel : mettre à jour le statut de la commande
                           await supabase.from('orders').update({ status: 'paid' }).eq('id', payment.order_id);
                           alert('✅ Paiement validé');
                           loadAllData();
