@@ -495,16 +495,14 @@ ${formData.description}
         </div>
       )}
 
-      {/* ✅ Widget Chat - maintenant avec le bon composant et les bonnes props */}
+      {/* ✅ Widget Chat - avec overlay correct */}
       {showChat && (
         <div style={styles.chatOverlay}>
-          <div style={styles.chatContainer}>
-            <ChatWidget 
-              productId={null} 
-              productName="Support Andremed" 
-              onClose={() => setShowChat(false)} 
-            />
-          </div>
+          <ChatWidget 
+            productId={null} 
+            productName="Support Andremed" 
+            onClose={() => setShowChat(false)} 
+          />
         </div>
       )}
     </div>
@@ -606,13 +604,6 @@ const styles = {
     justifyContent: 'center',
     zIndex: 10000,
     padding: '20px'
-  },
-  chatContainer: {
-    width: '100%',
-    maxWidth: '450px',
-    height: '80vh',
-    maxHeight: '600px',
-    position: 'relative'
   }
 };
 
