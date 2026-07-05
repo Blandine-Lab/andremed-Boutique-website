@@ -43,7 +43,7 @@ function Realisations() {
   // Compteurs (statistiques)
   const [counters, setCounters] = useState({
     projets: 0,
-    villes: 0,
+    hopitaux: 0,      // ← renommé
     institutions: 0,
     satisfaction: 0
   });
@@ -51,6 +51,9 @@ function Realisations() {
 
   useEffect(() => {
     if (statsInView) {
+      // Nombre d'hôpitaux = nombre de réalisations
+      const hopitauxCount = realisations.length || 0;
+      
       const animateCounter = (key, target) => {
         let start = 0;
         const duration = 2000;
@@ -66,16 +69,17 @@ function Realisations() {
         }, 16);
         return () => clearInterval(timer);
       };
+      
       animateCounter('projets', 50);
-      animateCounter('villes', 6);
+      animateCounter('hopitaux', hopitauxCount);  // ← dynamique
       animateCounter('institutions', 25);
       animateCounter('satisfaction', 100);
     }
-  }, [statsInView]);
+  }, [statsInView, realisations]); // ← dépendance à realisations
 
   return (
     <div style={styles.container}>
-      {/* Hero Section avec vidéo tournante (sans overlay) */}
+      {/* Hero Section avec vidéo tournante */}
       <section style={styles.hero}>
         <div style={styles.videoBackground}>
           <AnimatePresence mode="wait">
@@ -121,9 +125,9 @@ function Realisations() {
             <p style={styles.statLabel}>Projets Réalisés</p>
           </div>
           <div className="glass-card" style={styles.statCard}>
-            <div style={styles.statIcon}>📍</div>
-            <div style={styles.statNumber}>{counters.villes}</div>
-            <p style={styles.statLabel}>Villes Couvertes</p>
+            <div style={styles.statIcon}>🏥</div>
+            <div style={styles.statNumber}>{counters.hopitaux}</div>
+            <p style={styles.statLabel}>Hôpitaux équipés</p>  {/* ← label changé */}
           </div>
           <div className="glass-card" style={styles.statCard}>
             <div style={styles.statIcon}>🤝</div>
@@ -222,7 +226,7 @@ function Realisations() {
           </p>
           <div style={styles.partnerStats}>
             <span>🏥 50+ Projets</span>
-            <span>📍 6 Villes</span>
+            <span>🏥 {realisations.length} Hôpitaux équipés</span>
             <span>🤝 25+ Partenaires</span>
             <span>⭐ 100% Satisfaction</span>
           </div>
@@ -232,7 +236,7 @@ function Realisations() {
   );
 }
 
-// ========== STYLES (inchangés) ==========
+// ========== STYLES ==========
 const styles = {
   container: {
     minHeight: '100vh',
@@ -456,7 +460,7 @@ const styles = {
   }
 };
 
-// Effet de survol par ombre (pas de scale)
+// Effet de survol par ombre
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   .gallery-item:hover {
