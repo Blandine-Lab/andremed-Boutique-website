@@ -5,11 +5,6 @@ import { supabase } from '../lib/supabase';
 
 function Footer() {
   const [settings, setSettings] = useState({
-    phone1: '',
-    phone2: '',
-    email: '',
-    supportEmail: '',
-    address: '',
     facebook_url: '',
     linkedin_url: '',
     tiktok_url: ''
@@ -228,7 +223,7 @@ const styles = {
     padding: 0,
     margin: 0
   },
-  // ✅ Nouveaux styles pour les contacts
+  // ✅ Styles pour les contacts
   contactInfo: {
     marginTop: '15px',
     paddingTop: '15px',
