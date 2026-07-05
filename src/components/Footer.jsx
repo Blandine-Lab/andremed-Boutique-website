@@ -126,7 +126,7 @@ function Footer() {
             <li><Link to="/accessibility">Accessibility</Link></li>
           </ul>
 
-          {/* ✅ NOUVELLES ADRESSES EMAIL AJOUTÉES */}
+          {/* ✅ NOUVELLES ADRESSES EMAIL AVEC STYLES AMÉLIORÉS */}
           <div style={footerStyles.contactInfo}>
             <div style={footerStyles.contactItem}>
               <span style={footerStyles.contactIcon}>📧</span>
@@ -232,23 +232,36 @@ const footerStyles = {
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: '5px',
-    marginBottom: '6px',
-    fontSize: '0.75rem'
+    gap: '8px',
+    marginBottom: '10px',
+    fontSize: '0.9rem', // ✅ Taille augmentée
+    fontFamily: 'Arial, Helvetica, sans-serif', // ✅ Police plus lisible
+    padding: '4px 0'
   },
   contactIcon: {
-    fontSize: '0.8rem',
-    marginRight: '3px'
+    fontSize: '1rem',
+    marginRight: '5px',
+    flexShrink: 0
   },
   contactLabel: {
-    color: 'rgba(255,255,255,0.6)',
-    fontWeight: '500'
+    color: '#FFD166', // ✅ Jaune doré pour plus de visibilité
+    fontWeight: '600', // ✅ Gras pour les labels
+    fontSize: '0.85rem',
+    letterSpacing: '0.5px',
+    flexShrink: 0
   },
   contactLink: {
-    color: '#FFD166',
+    color: '#FFFFFF', // ✅ Blanc pur pour les emails
     textDecoration: 'none',
     wordBreak: 'break-all',
-    transition: 'color 0.3s ease'
+    transition: 'color 0.3s ease',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    letterSpacing: '0.3px',
+    backgroundColor: 'rgba(255,255,255,0.08)', // ✅ Légère surbrillance
+    padding: '2px 8px',
+    borderRadius: '4px'
   },
   socialLinks: {
     display: 'flex',
@@ -280,7 +293,7 @@ const footerStyles = {
   }
 };
 
-// ✅ Injection des styles CSS globaux (comme dans Home.js)
+// ✅ Injection des styles CSS globaux
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   .custom-footer .footerList li { margin-bottom: 8px; }
@@ -292,7 +305,10 @@ styleSheet.textContent = `
   }
   .custom-footer .footerList li a:hover { color: #FFD166; }
   .custom-footer .socialIcon:hover { transform: translateY(-3px); }
-  .custom-footer .contactLink:hover { color: #fff; }
+  .custom-footer .contactLink:hover { 
+    color: #FFD166 !important;
+    background-color: rgba(255,215,0,0.15);
+  }
   .custom-footer .footerBottomLinks a { 
     color: rgba(255,255,255,0.8); 
     text-decoration: none; 
@@ -312,7 +328,7 @@ styleSheet.textContent = `
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.2);
+    background-color: rgba(0,0,0,0.25);
     z-index: 1;
   }
   .custom-footer > * {
