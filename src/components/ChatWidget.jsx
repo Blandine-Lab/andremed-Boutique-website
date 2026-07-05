@@ -1,7 +1,9 @@
+// src/components/ChatWidget.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// ✅ URL du backend
+const API_URL = import.meta.env.VITE_API_URL || 'https://andremed-email-backend.onrender.com/api';
 
 const ChatWidget = ({ productId, productName, onClose }) => {
   const [messages, setMessages] = useState([]);
@@ -36,7 +38,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
 
   useEffect(() => {
     if (!userChatId) return;
-    const interval = setInterval(() => checkForReplies(), 2000);
+    const interval = setInterval(() => checkForReplies(), 3000);
     return () => clearInterval(interval);
   }, [userChatId]);
 
@@ -78,6 +80,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
         }),
       });
       const data = await response.json();
+      
       if (data.success) {
         setUserChatId(data.userId);
         setSendStatus('✅ Message envoyé ! En attente de réponse...');
@@ -106,6 +109,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
     try {
       const response = await fetch(`${API_URL}/chat/updates`);
       const data = await response.json();
+      
       if (data.ok && data.result) {
         for (const update of data.result) {
           if (update.message && update.message.text) {
@@ -169,6 +173,9 @@ const ChatWidget = ({ productId, productName, onClose }) => {
               {msg.sender === 'user' && msg.status === 'delivered' && (
                 <div style={styles.statusDelivered}>✓✓ Livré</div>
               )}
+              {msg.sender === 'user' && msg.status === 'error' && (
+                <div style={styles.statusError}>❌ Échec</div>
+              )}
             </div>
           ))}
           {isWaitingResponse && (
@@ -223,7 +230,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
             </button>
           </div>
           {sendStatus && (
-            <p style={sendStatus.includes('✅') ? styles.statusSuccess : styles.statusError}>
+            <p style={sendStatus.includes('✅') ? styles.statusSuccess : styles.statusErrorMsg}>
               {sendStatus}
             </p>
           )}
@@ -233,6 +240,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
   );
 };
 
+// ========== STYLES ==========
 const styles = {
   overlay: {
     position: 'fixed',
@@ -326,6 +334,7 @@ const styles = {
   messageText: { fontSize: '0.9rem', wordBreak: 'break-word' },
   statusSent: { fontSize: '0.6rem', textAlign: 'right', marginTop: '3px', opacity: 0.7 },
   statusDelivered: { fontSize: '0.6rem', textAlign: 'right', marginTop: '3px', color: '#25D366' },
+  statusError: { fontSize: '0.6rem', textAlign: 'right', marginTop: '3px', color: '#B41E1E' },
   waitingIndicator: {
     display: 'flex',
     alignItems: 'center',
@@ -392,7 +401,7 @@ const styles = {
     transition: 'transform 0.2s ease',
   },
   statusSuccess: { color: '#2E7D32', fontSize: '0.75rem', marginTop: '8px', textAlign: 'center' },
-  statusError: { color: '#B41E1E', fontSize: '0.75rem', marginTop: '8px', textAlign: 'center' },
+  statusErrorMsg: { color: '#B41E1E', fontSize: '0.75rem', marginTop: '8px', textAlign: 'center' },
 };
 
 export default ChatWidget;
