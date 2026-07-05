@@ -201,7 +201,6 @@ function Home() {
 
   // ========== NEWSLETTER : ENVOI GROUPÉ (ADMIN) ==========
 const handleBulkSend = async () => {
-  // Utilisation de la variable d'environnement pour l'URL du backend
   const backendUrl = import.meta.env.VITE_NEWSLETTER_BACKEND_URL || 'https://andremed-email-backend.onrender.com/api/send-emails';
 
   if (adminPassword.trim() !== '@M@thurkayo219901990@@@@1') {
@@ -256,6 +255,7 @@ const handleBulkSend = async () => {
     setBulkStatus('');
   }, 4000);
 };
+
   // ========== SOUTIEN ==========
   const sendSupportToTelegram = async (formData) => {
     const typeLabel = formData.type === 'don' ? '💝 Don' : formData.type === 'partenariat' ? '🤝 Partenariat' : '📝 Autre';
@@ -818,7 +818,6 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
         </div>
       </section>
 
-      {/* ✅ SECTION NOUVEAUTÉS - 15 derniers produits avec correction image */}
       {newProducts.length > 0 && (
         <section style={styles.newProductsSection}>
           <div style={styles.newProductsHeader}>
@@ -858,7 +857,6 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
         </section>
       )}
 
-      {/* ✅ SECTION BLOG - 9 derniers articles */}
       {blogPosts.length > 0 && (
         <section style={styles.blogSection}>
           <div style={styles.blogContainer}>
@@ -918,7 +916,6 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
         </section>
       )}
 
-      {/* ✅ SECTION ACTUALITÉS & PROMOTIONS (CORRIGÉE) */}
       <section style={styles.newsSection}>
         <div style={styles.newsHeader}>
           <h2 style={styles.sectionTitleDark}>📢 Actualités & Promotions</h2>
@@ -1214,8 +1211,10 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
         </div>
       </motion.section>
 
+      {/* ========== FOOTER ========== */}
       <footer className="custom-footer" style={styles.footer}>
         <div style={styles.footerContainer}>
+          {/* Colonne 1 - About Us */}
           <div style={styles.footerColumn}>
             <h3 style={styles.footerTitle}>About Us</h3>
             <ul style={styles.footerList}>
@@ -1231,6 +1230,8 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
               <li><Link to="/about#partners">Partners</Link></li>
             </ul>
           </div>
+
+          {/* Colonne 2 - Products */}
           <div style={styles.footerColumn}>
             <h3 style={styles.footerTitle}>Products</h3>
             <ul style={styles.footerList}>
@@ -1246,6 +1247,8 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
               <li><Link to="/shop?category=consumables">Medical Consumables</Link></li>
             </ul>
           </div>
+
+          {/* Colonne 3 - Resource Center */}
           <div style={styles.footerColumn}>
             <h3 style={styles.footerTitle}>Resource Center</h3>
             <ul style={styles.footerList}>
@@ -1261,6 +1264,8 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
               <li><Link to="/faq">FAQ</Link></li>
             </ul>
           </div>
+
+          {/* Colonne 4 - Member */}
           <div style={styles.footerColumn}>
             <h3 style={styles.footerTitle}>Member</h3>
             <ul style={styles.footerList}>
@@ -1276,6 +1281,8 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
               <li><Link to="/member/notification-settings">Notification Settings</Link></li>
             </ul>
           </div>
+
+          {/* Colonne 5 - Services & Support */}
           <div style={styles.footerColumn}>
             <h3 style={styles.footerTitle}>Services & Support</h3>
             <ul style={styles.footerList}>
@@ -1291,6 +1298,8 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
               <li><Link to="/feedback">Customer Feedback</Link></li>
             </ul>
           </div>
+
+          {/* Colonne 6 - Contact avec les adresses email */}
           <div style={styles.footerColumn}>
             <h3 style={styles.footerTitle}>Contact</h3>
             <ul style={styles.footerList}>
@@ -1305,6 +1314,32 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
               <li><Link to="/sitemap">Sitemap</Link></li>
               <li><Link to="/accessibility">Accessibility</Link></li>
             </ul>
+
+            {/* ✅ NOUVELLES ADRESSES EMAIL AJOUTÉES */}
+            <div style={styles.contactInfo}>
+              <div style={styles.contactItem}>
+                <span style={styles.contactIcon}>📧</span>
+                <span style={styles.contactLabel}>Information :</span>
+                <a href="mailto:contact@andremed.org" style={styles.contactLink}>contact@andremed.org</a>
+              </div>
+              <div style={styles.contactItem}>
+                <span style={styles.contactIcon}>📦</span>
+                <span style={styles.contactLabel}>Commandes & Livraison :</span>
+                <a href="mailto:supporttechn.log@andremed.org" style={styles.contactLink}>supporttechn.log@andremed.org</a>
+              </div>
+              <div style={styles.contactItem}>
+                <span style={styles.contactIcon}>💰</span>
+                <span style={styles.contactLabel}>Administration & Finance :</span>
+                <a href="mailto:admin.finance@andremed.org" style={styles.contactLink}>admin.finance@andremed.org</a>
+              </div>
+              <div style={styles.contactItem}>
+                <span style={styles.contactIcon}>👔</span>
+                <span style={styles.contactLabel}>Direction :</span>
+                <a href="mailto:andre.kabe@andremed.org" style={styles.contactLink}>andre.kabe@andremed.org</a>
+              </div>
+            </div>
+
+            {/* Réseaux sociaux */}
             <div style={styles.socialLinks}>
               <a href={settings.facebook_url || "https://facebook.com"} target="_blank" rel="noopener noreferrer" style={styles.socialIcon}>
                 <img src="https://cdn-icons-png.flaticon.com/512/5968/5968764.png" alt="Facebook" style={{ width: '28px', height: '28px' }} />
@@ -1327,6 +1362,8 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
             </div>
           </div>
         </div>
+
+        {/* Footer Bottom */}
         <div style={styles.footerBottom}>
           <div style={styles.footerBottomLinks}>
             <Link to="/">Home</Link> | <Link to="/about">About us</Link> | <Link to="/blog">Blog</Link> | <Link to="/contact">Contact us</Link> | GlobalMind.MK.Innotech
@@ -1773,6 +1810,47 @@ const styles = {
   footerBottomLinks: { marginBottom: '10px' },
   paymentIcons: { marginBottom: '10px' },
   copyright: { fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' },
+  // ✅ NOUVEAUX STYLES POUR LES ADRESSES EMAIL
+  contactInfo: {
+    marginTop: '15px',
+    paddingTop: '15px',
+    borderTop: '1px solid rgba(255,255,255,0.15)'
+  },
+  contactItem: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '10px',
+    fontSize: '0.9rem',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    padding: '4px 0'
+  },
+  contactIcon: {
+    fontSize: '1rem',
+    marginRight: '5px',
+    flexShrink: 0
+  },
+  contactLabel: {
+    color: '#FFD166',
+    fontWeight: '600',
+    fontSize: '0.85rem',
+    letterSpacing: '0.5px',
+    flexShrink: 0
+  },
+  contactLink: {
+    color: '#FFFFFF',
+    textDecoration: 'none',
+    wordBreak: 'break-all',
+    transition: 'color 0.3s ease',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    letterSpacing: '0.3px',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    padding: '2px 8px',
+    borderRadius: '4px'
+  },
   quoteModal: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5000 },
   quoteModalContent: { background: 'white', borderRadius: '20px', width: '90%', maxWidth: '550px', maxHeight: '85vh', overflow: 'auto' },
   quoteModalHeader: { background: 'linear-gradient(135deg, #0A4D8C, #00A3B2)', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' },
@@ -1822,6 +1900,12 @@ styleSheet.textContent = `
   .footerBottomLinks a { color: rgba(255,255,255,0.8); text-decoration: none; margin: 0 5px; }
   .footerBottomLinks a:hover { color: #FFD166; }
   .paymentIcons span { margin: 0 8px; font-size: 0.7rem; opacity: 0.8; color: white; }
+
+  /* ✅ Nouveau style pour les emails */
+  .custom-footer .contactLink:hover { 
+    color: #FFD166 !important;
+    background-color: rgba(255,215,0,0.15);
+  }
 
   @media (max-width: 768px) {
     .citiesGrid { grid-template-columns: repeat(2, 1fr) !important; }
