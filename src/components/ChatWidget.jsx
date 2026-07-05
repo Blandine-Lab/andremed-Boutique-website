@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
-// Configuration Telegram (identique à Services.jsx)
+// Configuration Telegram
 const TELEGRAM_BOT_TOKEN = '8570394266:AAE1_Az0Hzot09m8u3s4Ml-EUMHQjgqunwY';
 const GROUP_CHAT_ID = '-5293060257';
 
@@ -43,7 +43,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
     return () => clearInterval(interval);
   }, [userChatId]);
 
-  // ✅ Envoyer directement à Telegram (comme dans Services.jsx)
+  // ✅ Envoyer directement à Telegram (sans Markdown)
   const sendMessage = async () => {
     if (!inputMessage.trim()) {
       setSendStatus('Veuillez écrire un message');
@@ -70,7 +70,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
     if (productName) fullMessage = `[${productName}] ${inputMessage}`;
     if (productId) fullMessage = `Produit #${productId} - ${fullMessage}`;
 
-    // ✅ Construction du message Telegram
+    // ✅ Construction du message Telegram (SANS Markdown)
     const supportMessageText = `📩 NOUVEAU MESSAGE (Chat Widget)
 ━━━━━━━━━━━━━━━━━━
 📄 Produit: ${productName || 'Support général'}
@@ -91,7 +91,7 @@ const ChatWidget = ({ productId, productName, onClose }) => {
         body: JSON.stringify({
           chat_id: GROUP_CHAT_ID,
           text: supportMessageText,
-          parse_mode: 'Markdown'
+          // ❌ SUPPRIMER parse_mode pour éviter les erreurs de formatage
         }),
       });
 
