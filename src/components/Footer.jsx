@@ -255,7 +255,7 @@ const footerStyles = {
     textDecoration: 'none',
     wordBreak: 'break-all',
     transition: 'color 0.3s ease',
-    fontSize: '0.9rem',
+    fontSize: '0.7rem',
     fontWeight: '500',
     fontFamily: 'Arial, Helvetica, sans-serif',
     letterSpacing: '0.3px',
