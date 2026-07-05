@@ -24,6 +24,7 @@ import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
 import OrderDetail from './pages/OrderDetail';
 import Payment from './pages/Payment';
+import Faq from './pages/Faq'; // ✅ Import de la nouvelle page FAQ
 
 // Composant pour le contenu principal avec footer conditionnel
 function AppContent() {
@@ -52,6 +53,9 @@ function AppContent() {
           {/* Ensuite la route exacte pour la liste */}
           <Route path="/blog" element={<Blog />} />
           
+          {/* ✅ NOUVEAU : Page FAQ dynamique synchronisée avec AdminPanel */}
+          <Route path="/faq" element={<Faq />} />
+          
           {/* Routes pour les téléchargements */}
           <Route path="/downloads" element={<Downloads />} />
           <Route path="/catalog" element={<Downloads />} />
@@ -79,7 +83,9 @@ function AppContent() {
           <Route path="/service/:pageKey" element={<ServicePage />} />
           
           {/* Routes simplifiées pour Services & Support - avec redirection */}
-          <Route path="/faq" element={<Navigate to="/service/faq" replace />} />
+          {/* ❌ Supprimer la redirection /faq car maintenant elle a sa propre page */}
+          {/* <Route path="/faq" element={<Navigate to="/service/faq" replace />} /> */}
+          
           <Route path="/help" element={<Navigate to="/service/help" replace />} />
           <Route path="/join" element={<Navigate to="/service/join" replace />} />
           <Route path="/technical-support" element={<Navigate to="/service/technical-support" replace />} />
