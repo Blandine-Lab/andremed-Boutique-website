@@ -1367,16 +1367,99 @@ function AdminPanel() {
       {/* ================= ONGLET PAGES SERVICES ================= */}
       {activeTab === 'servicePages' && (
         <section style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
-          <h2>🔧 Pages Services</h2>
-          {servicePages.map((page, idx) => (
-            <div key={idx} style={{ border: '1px solid #ddd', padding: '1rem', marginTop: '1rem', borderRadius: '8px' }}>
-              <input placeholder="Titre" value={page.title} onChange={e => updateServicePage(idx, 'title', e.target.value)} style={{ width: '100%', marginBottom: '8px' }} />
-              <textarea placeholder="Contenu HTML" rows="4" value={page.content || ''} onChange={e => updateServicePage(idx, 'content', e.target.value)} style={{ width: '100%', marginBottom: '8px' }} />
-              <input placeholder="Icône" value={page.icon || ''} onChange={e => updateServicePage(idx, 'icon', e.target.value)} style={{ width: '100%', marginBottom: '8px' }} />
-              <label><input type="checkbox" checked={page.active} onChange={e => updateServicePage(idx, 'active', e.target.checked)} /> Actif</label>
-            </div>
-          ))}
-          <button onClick={saveServicePages} style={{ marginTop: '1rem', background: '#2E7D32', color: 'white' }}>💾 Sauvegarder</button>
+          <h2>🔧 Pages Services & Support</h2>
+          <p style={{ color: '#6C757D', marginBottom: '1rem', fontSize: '0.9rem' }}>
+            Gérez le contenu des pages : Our Services, Support technique, FAQ, Formation, Help Center, Join Us, 
+            Technical Support, Training Programs, Maintenance Services, Warranty Information, Returns & Refunds, Customer Feedback
+          </p>
+          
+          {servicePages.length === 0 ? (
+            <p>Aucune page service enregistrée.</p>
+          ) : (
+            servicePages.map((page, idx) => (
+              <div key={idx} style={{ 
+                border: '1px solid #ddd', 
+                padding: '1rem', 
+                marginTop: '1rem', 
+                borderRadius: '8px',
+                background: page.active === false ? '#f8f9fa' : 'white'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <h4 style={{ margin: 0, color: '#0A4D8C' }}>
+                    {page.icon || '📄'} {page.title || 'Sans titre'}
+                  </h4>
+                  <span style={{ 
+                    fontSize: '0.7rem', 
+                    padding: '3px 10px', 
+                    borderRadius: '20px',
+                    background: page.active !== false ? '#4CAF50' : '#B41E1E',
+                    color: 'white'
+                  }}>
+                    {page.active !== false ? '✅ Actif' : '❌ Inactif'}
+                  </span>
+                </div>
+                
+                <input 
+                  placeholder="Titre de la page" 
+                  value={page.title || ''} 
+                  onChange={e => updateServicePage(idx, 'title', e.target.value)} 
+                  style={{ width: '100%', marginBottom: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} 
+                />
+                
+                <input 
+                  placeholder="Icône (ex: 🔧)" 
+                  value={page.icon || ''} 
+                  onChange={e => updateServicePage(idx, 'icon', e.target.value)} 
+                  style={{ width: '100%', marginBottom: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} 
+                />
+                
+                <textarea 
+                  placeholder="Contenu HTML de la page" 
+                  rows="6" 
+                  value={page.content || ''} 
+                  onChange={e => updateServicePage(idx, 'content', e.target.value)} 
+                  style={{ width: '100%', marginBottom: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontFamily: 'monospace' }} 
+                />
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={page.active !== false} 
+                      onChange={e => updateServicePage(idx, 'active', e.target.checked)} 
+                    /> 
+                    <span style={{ color: page.active !== false ? '#2E7D32' : '#B41E1E' }}>
+                      {page.active !== false ? '✅ Actif' : '❌ Inactif'}
+                    </span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    Ordre : 
+                    <input 
+                      type="number" 
+                      value={page.order_index || 0} 
+                      onChange={e => updateServicePage(idx, 'order_index', parseInt(e.target.value) || 0)} 
+                      style={{ width: '60px', padding: '4px 8px', border: '1px solid #ddd', borderRadius: '4px' }} 
+                    />
+                  </label>
+                  <span style={{ fontSize: '0.8rem', color: '#999' }}>
+                    Page key: {page.page_key || 'non défini'}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+          
+          <button onClick={saveServicePages} style={{ 
+            marginTop: '1.5rem', 
+            background: '#2E7D32', 
+            color: 'white', 
+            padding: '10px 20px', 
+            border: 'none', 
+            borderRadius: '5px', 
+            cursor: 'pointer' 
+          }}>
+            💾 Sauvegarder toutes les pages services
+          </button>
         </section>
       )}
 
