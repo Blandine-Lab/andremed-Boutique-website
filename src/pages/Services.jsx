@@ -22,7 +22,7 @@ function Services() {
   // ========== ÉTAT POUR LE CHAT ==========
   const [showChat, setShowChat] = useState(false);
 
-  // ========== NOUVEAU : ÉTATS POUR LE CHECK-UP CENTER ==========
+  // ========== ÉTATS POUR LE CHECK-UP CENTER ==========
   const [checkupFormData, setCheckupFormData] = useState({
     fullname: '',
     email: '',
@@ -141,7 +141,7 @@ ${formData.description}
     setQuoteSending(false);
   };
 
-  // ========== NOUVELLES FONCTIONS POUR CHECK-UP ==========
+  // ========== FONCTIONS POUR CHECK-UP ==========
   const sendCheckupToTelegram = async (formData) => {
     const typeLabels = {
       bilan_essentiel: 'Diagnostic essentiel (gratuit)',
@@ -273,6 +273,7 @@ ${formData.description}
     }
   }, [statsInView]);
 
+  // ========== DONNÉES STATIQUES ==========
   const services = [
     {
       icon: "🔧",
@@ -348,14 +349,13 @@ ${formData.description}
         </div>
       </section>
 
-      {/* ========== NOUVELLE SECTION : CENTRE DE DIAGNOSTIC & CONSEIL ========== */}
+      {/* Section : Centre de Diagnostic & Conseil */}
       <section style={styles.checkupSection}>
         <div style={styles.checkupHeader}>
           <h2 style={styles.checkupTitle}>🔬 Centre de diagnostic & conseil</h2>
           <p style={styles.checkupSubtitle}>Évaluez vos besoins en équipements médicaux avec nos experts</p>
         </div>
         <div style={styles.checkupGrid}>
-          {/* Carte Diagnostic essentiel */}
           <div className="glass-card" style={styles.checkupCard}>
             <h3 style={styles.checkupCardTitle}>Diagnostic essentiel</h3>
             <div style={styles.checkupPrice}>Gratuit</div>
@@ -367,7 +367,6 @@ ${formData.description}
             </ul>
             <button className="btn-checkup" onClick={() => document.getElementById('checkupForm').scrollIntoView({ behavior: 'smooth' })} style={styles.checkupBtn}>Demander</button>
           </div>
-          {/* Carte Audit technique avancé */}
           <div className="glass-card" style={styles.checkupCard}>
             <h3 style={styles.checkupCardTitle}>Audit technique avancé</h3>
             <div style={styles.checkupPrice}>À partir de 150€</div>
@@ -379,7 +378,6 @@ ${formData.description}
             </ul>
             <button className="btn-checkup" onClick={() => document.getElementById('checkupForm').scrollIntoView({ behavior: 'smooth' })} style={styles.checkupBtn}>Demander</button>
           </div>
-          {/* Carte Stratégie premium */}
           <div className="glass-card" style={styles.checkupCard}>
             <h3 style={styles.checkupCardTitle}>Stratégie premium</h3>
             <div style={styles.checkupPrice}>À partir de 450€</div>
@@ -466,7 +464,7 @@ ${formData.description}
           <h2 style={styles.ctaTitle}>🚀 Prêt à Démarrer Votre Projet ?</h2>
           <p style={styles.ctaText}>Contactez-nous dès aujourd'hui pour une consultation gratuite et découvrez comment nous pouvons vous aider à moderniser vos équipements médicaux.</p>
           <div style={styles.ctaButtons}>
-            <button onClick={() => setShowChat(true)} className="btn-primary" style={styles.ctaButton}>📞 Nous contacter</button>
+            <button onClick={() => setShowChat(true)} className="btn-primary" style={{...styles.ctaButton, background: '#0A4D8C', color: 'white', border: 'none'}}>📞 Nous contacter</button>
             <button onClick={() => setShowQuoteModal(true)} className="btn-secondary" style={styles.ctaButton}>📋 Demander un devis</button>
           </div>
         </div>
@@ -497,16 +495,23 @@ ${formData.description}
         </div>
       )}
 
-      {/* Widget Chat */}
-      {showChat && <ChatWidget productId={null} productName="Support" onClose={() => setShowChat(false)} />}
+      {/* ✅ Widget Chat - maintenant avec le bon composant et les bonnes props */}
+      {showChat && (
+        <div style={styles.chatOverlay}>
+          <div style={styles.chatContainer}>
+            <ChatWidget 
+              productId={null} 
+              productName="Support Andremed" 
+              onClose={() => setShowChat(false)} 
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ================= STYLES =================
-// NOTE : Vous devez fusionner ces styles avec votre objet `styles` existant.
-// Voici l'objet complet (incluant les styles de base et les nouveaux pour le check-up).
-
 const styles = {
   container: {
     minHeight: '100vh',
@@ -536,7 +541,7 @@ const styles = {
   serviceIcon: { fontSize: '2.5rem', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', marginBottom: '1rem' },
   serviceTitle: { fontSize: '1.3rem', color: '#1A2A3A', marginBottom: '0.5rem' },
   serviceDesc: { fontSize: '0.9rem', color: '#6C757D', marginBottom: '1rem' },
-  servicePoints: { listStyle: 'none', padding: 0, margin: 0, li: { fontSize: '0.85rem', color: '#6C757D', marginBottom: '0.3rem' } },
+  servicePoints: { listStyle: 'none', padding: 0, margin: 0 },
   processSection: { padding: '60px 20px', background: '#f0f4f8', textAlign: 'center' },
   processContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto' },
   processCard: { position: 'relative', padding: '2rem', borderRadius: '20px', overflow: 'hidden', color: 'white', textAlign: 'center', minHeight: '280px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', transition: 'all 0.3s', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
@@ -549,7 +554,7 @@ const styles = {
   ctaTitle: { fontSize: '2rem', color: '#0A4D8C', marginBottom: '1rem' },
   ctaText: { fontSize: '1.1rem', color: '#6C757D', marginBottom: '2rem', lineHeight: '1.6' },
   ctaButtons: { display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' },
-  ctaButton: { cursor: 'pointer', background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', color: '#0A4D8C', padding: '9px 24px', borderRadius: '40px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem', transition: 'all 0.3s ease', border: '1px solid rgba(10,77,140,0.3)', display: 'inline-block' },
+  ctaButton: { cursor: 'pointer', background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', color: '#0A4D8C', padding: '12px 28px', borderRadius: '40px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem', transition: 'all 0.3s ease', border: '1px solid rgba(10,77,140,0.3)', display: 'inline-block' },
   quoteModal: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5000 },
   quoteModalContent: { background: 'white', borderRadius: '20px', width: '90%', maxWidth: '550px', maxHeight: '85vh', overflow: 'auto' },
   quoteModalHeader: { background: 'linear-gradient(135deg, #0A4D8C, #00A3B2)', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' },
@@ -562,7 +567,7 @@ const styles = {
   quoteSuccess: { color: '#2E7D32', textAlign: 'center', marginTop: '10px' },
   quoteError: { color: '#B41E1E', textAlign: 'center', marginTop: '10px' },
 
-  // ========== NOUVEAUX STYLES POUR LA SECTION CHECK-UP ==========
+  // ========== STYLES POUR LA SECTION CHECK-UP ==========
   checkupSection: {
     padding: '60px 20px',
     background: 'linear-gradient(135deg, #f0f7fc 0%, #ffffff 100%)',
@@ -574,7 +579,7 @@ const styles = {
   checkupTitle: { fontSize: '2.2rem', color: '#0A4D8C', marginBottom: '0.5rem' },
   checkupSubtitle: { fontSize: '1.1rem', color: '#6C757D' },
   checkupGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto 3rem' },
-  checkupCard: { background: 'white', borderRadius: '24px', padding: '1.8rem', textAlign: 'center', transition: 'transform 0.3s', cursor: 'pointer', '&:hover': { transform: 'translateY(-5px)' } },
+  checkupCard: { background: 'white', borderRadius: '24px', padding: '1.8rem', textAlign: 'center', transition: 'transform 0.3s', cursor: 'pointer' },
   checkupCardTitle: { fontSize: '1.5rem', color: '#0A4D8C', marginBottom: '0.5rem' },
   checkupPrice: { fontSize: '1.8rem', fontWeight: 'bold', color: '#00A3B2', margin: '1rem 0' },
   checkupList: { listStyle: 'none', padding: 0, margin: '1rem 0 1.5rem', textAlign: 'left' },
@@ -586,7 +591,29 @@ const styles = {
   checkupFormGroup: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
   checkupSubmitBtn: { background: '#0A4D8C', color: 'white', border: 'none', padding: '12px', borderRadius: '30px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' },
   checkupSuccess: { color: '#2E7D32', textAlign: 'center', marginTop: '10px' },
-  checkupError: { color: '#B41E1E', textAlign: 'center', marginTop: '10px' }
+  checkupError: { color: '#B41E1E', textAlign: 'center', marginTop: '10px' },
+
+  // ========== STYLES POUR LE CHAT ==========
+  chatOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10000,
+    padding: '20px'
+  },
+  chatContainer: {
+    width: '100%',
+    maxWidth: '450px',
+    height: '80vh',
+    maxHeight: '600px',
+    position: 'relative'
+  }
 };
 
 export default Services;
