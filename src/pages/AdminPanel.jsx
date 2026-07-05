@@ -268,7 +268,19 @@ function AdminPanel() {
   };
 
   // ================= GESTION PRODUITS =================
-  const addProduct = () => setProducts([...products, { id: Date.now(), name: 'Nouveau produit', category: '', quantity: 0, price: 0, unit: 'pièce', seuil_alerte: 10, image: '📦', media: [], is_new: false, active: true }]);
+  const addProduct = () => setProducts([...products, { 
+    id: Date.now(), 
+    name: 'Nouveau produit', 
+    category: '', 
+    quantity: 0, 
+    price: 0, 
+    unit: 'pièce', 
+    seuil_alerte: 10, 
+    image: '📦', 
+    media: [],  // ← tableau pour les images supplémentaires
+    is_new: false, 
+    active: true 
+  }]);
   const updateProduct = (idx, field, val) => setProducts(products.map((p, i) => i === idx ? { ...p, [field]: val } : p));
   const deleteProduct = async (idx) => {
     const p = products[idx];
@@ -909,29 +921,119 @@ function AdminPanel() {
         </section>
       )}
 
-      {/* ================= ONGLET PRODUITS ================= */}
+      {/* ================= ONGLET PRODUITS (AVEC IMAGES MULTIPLES) ================= */}
       {activeTab === 'products' && (
         <section style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
           <h2>📦 Produits</h2>
           <button onClick={addProduct}>➕ Ajouter un produit</button>
           {products.map((p, idx) => (
             <div key={idx} style={{ border: '1px solid #ddd', padding: '1rem', marginTop: '1rem', borderRadius: '8px' }}>
-              <input placeholder="Nom" value={p.name} onChange={e => updateProduct(idx, 'name', e.target.value)} style={{ width: '100%', marginBottom: '8px' }} />
-              <input placeholder="Catégorie" value={p.category || ''} onChange={e => updateProduct(idx, 'category', e.target.value)} style={{ width: '100%', marginBottom: '8px' }} />
-              <input placeholder="Prix" type="number" value={p.price} onChange={e => updateProduct(idx, 'price', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: '8px' }} />
-              <input placeholder="Quantité" type="number" value={p.quantity} onChange={e => updateProduct(idx, 'quantity', parseInt(e.target.value))} style={{ width: '100%', marginBottom: '8px' }} />
+              <input
+                placeholder="Nom"
+                value={p.name}
+                onChange={e => updateProduct(idx, 'name', e.target.value)}
+                style={{ width: '100%', marginBottom: '8px' }}
+              />
+              <input
+                placeholder="Catégorie"
+                value={p.category || ''}
+                onChange={e => updateProduct(idx, 'category', e.target.value)}
+                style={{ width: '100%', marginBottom: '8px' }}
+              />
+              <input
+                placeholder="Prix"
+                type="number"
+                value={p.price}
+                onChange={e => updateProduct(idx, 'price', parseFloat(e.target.value))}
+                style={{ width: '100%', marginBottom: '8px' }}
+              />
+              <input
+                placeholder="Quantité"
+                type="number"
+                value={p.quantity}
+                onChange={e => updateProduct(idx, 'quantity', parseInt(e.target.value))}
+                style={{ width: '100%', marginBottom: '8px' }}
+              />
+
+              {/* 🔵 Image principale */}
               <UploadField
-                label="Image"
+                label="Image principale"
                 value={p.image}
                 onValueChange={(url) => updateProduct(idx, 'image', url)}
                 folder="products"
               />
-              <label><input type="checkbox" checked={p.is_new} onChange={e => updateProduct(idx, 'is_new', e.target.checked)} /> Nouveau</label>
-              <label><input type="checkbox" checked={p.active !== false} onChange={e => updateProduct(idx, 'active', e.target.checked)} /> Actif</label>
-              <button onClick={() => deleteProduct(idx)} style={{ background: '#B41E1E', color: 'white', marginLeft: '10px' }}>🗑 Supprimer</button>
+
+              {/* 🟢 Images supplémentaires */}
+              <div style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                <label><strong>Images supplémentaires :</strong></label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px' }}>
+                  {(p.media || []).map((url, imgIdx) => (
+                    <div key={imgIdx} style={{ position: 'relative', display: 'inline-block' }}>
+                      <img
+                        src={url}
+                        alt={`Produit ${idx} supplémentaire ${imgIdx+1}`}
+                        style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }}
+                      />
+                      <button
+                        onClick={() => {
+                          const newMedia = (p.media || []).filter((_, i) => i !== imgIdx);
+                          updateProduct(idx, 'media', newMedia);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '-6px',
+                          right: '-6px',
+                          background: '#B41E1E',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '50%',
+                          width: '20px',
+                          height: '20px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          lineHeight: '20px',
+                          textAlign: 'center'
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files);
+                    const currentMedia = p.media || [];
+                    let newMedia = [...currentMedia];
+                    for (const file of files) {
+                      const url = await uploadImage(file, 'products');
+                      if (url) newMedia.push(url);
+                    }
+                    updateProduct(idx, 'media', newMedia);
+                    e.target.value = '';
+                  }}
+                  style={{ marginTop: '8px', display: 'block' }}
+                />
+                <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>
+                  Sélectionnez plusieurs fichiers (Ctrl+clic) pour ajouter plusieurs images.
+                </p>
+              </div>
+
+              <div style={{ marginTop: '12px' }}>
+                <label><input type="checkbox" checked={p.is_new} onChange={e => updateProduct(idx, 'is_new', e.target.checked)} /> Nouveau</label>
+                <label style={{ marginLeft: '15px' }}><input type="checkbox" checked={p.active !== false} onChange={e => updateProduct(idx, 'active', e.target.checked)} /> Actif</label>
+              </div>
+              <button onClick={() => deleteProduct(idx)} style={{ background: '#B41E1E', color: 'white', marginTop: '10px', padding: '6px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                🗑 Supprimer
+              </button>
             </div>
           ))}
-          <button onClick={saveProducts} style={{ marginTop: '1rem', background: '#2E7D32', color: 'white' }}>💾 Sauvegarder</button>
+          <button onClick={saveProducts} style={{ marginTop: '1rem', background: '#2E7D32', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+            💾 Sauvegarder tous les produits
+          </button>
         </section>
       )}
 
