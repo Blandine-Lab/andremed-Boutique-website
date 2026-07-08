@@ -40,7 +40,7 @@ function ProductDetails() {
     if (id) fetchProduct();
   }, [id]);
 
-  // ===== Extraire les URLs des images =====
+  // ===== Extraire les URLs des images (avec fallback sur image_url) =====
   const getImageUrls = () => {
     if (!product) return [];
 
@@ -53,6 +53,11 @@ function ProductDetails() {
 
     if (product.image) {
       return [product.image];
+    }
+
+    // ✅ Nouveau : utiliser image_url si image est vide
+    if (product.image_url) {
+      return [product.image_url];
     }
 
     return [];
