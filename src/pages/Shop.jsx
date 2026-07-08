@@ -1,7 +1,7 @@
 // src/pages/Shop.js
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom'; // ✅ Import de Link
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../context/CartContext';
 
@@ -209,39 +209,15 @@ function Shop() {
               )}
               <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={styles.productImageWrapper}>
-                  {product.image ? (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        const parent = e.target.parentElement;
-                        parent.style.display = 'flex';
-                        parent.style.alignItems = 'center';
-                        parent.style.justifyContent = 'center';
-                        parent.style.backgroundColor = '#0A4D8C';
-                        parent.style.color = 'white';
-                        parent.style.fontSize = '2.5rem';
-                        parent.style.fontWeight = 'bold';
-                        parent.innerText = product.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                      }}
-                    />
-                  ) : (
-                    <div style={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#0A4D8C',
-                      color: 'white',
-                      fontSize: '2.5rem',
-                      fontWeight: 'bold',
-                    }}>
-                      {product.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                    </div>
-                  )}
+                  {/* ===== NOUVEAU : utilisation de image ou image_url + placeholder ===== */}
+                  <img
+                    src={product.image || product.image_url || '/placeholder.png'}
+                    alt={product.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.target.src = '/placeholder.png';
+                    }}
+                  />
                   {product.oldPrice && (
                     <div style={styles.promoBadge}>
                       -{Math.round((1 - product.price / product.oldPrice) * 100)}%
