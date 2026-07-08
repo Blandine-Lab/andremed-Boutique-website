@@ -25,6 +25,18 @@ function Blog() {
     fetchProducts();
   }, []);
 
+  // Fonction pour récupérer l'URL de l'image
+  const getImageUrl = (product) => {
+    if (product.image && product.image !== '') return product.image;
+    if (product.image_url && product.image_url !== '') return product.image_url;
+    if (product.media && Array.isArray(product.media) && product.media.length > 0) {
+      const first = product.media[0];
+      if (typeof first === 'string') return first;
+      if (first && first.url) return first.url;
+    }
+    return '/placeholder.png';
+  };
+
   return (
     <div style={styles.blogContainer}>
       {/* Hero */}
@@ -52,9 +64,8 @@ function Blog() {
               >
                 <div style={styles.productImageContainer}>
                   <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                    {/* ===== CORRECTION ICI ===== */}
                     <img
-                      src={product.image || product.image_url || '/placeholder.png'}
+                      src={getImageUrl(product)}
                       alt={product.name}
                       style={styles.productImage}
                       onError={(e) => { e.target.src = '/placeholder.png'; }}
@@ -81,7 +92,7 @@ function Blog() {
         )}
       </div>
 
-      {/* Footer (identique à l’original) */}
+      {/* Footer (identique) */}
       <footer style={styles.blogFooter}>
         <div style={styles.footerTop}>
           <div style={styles.footerColumn}>
