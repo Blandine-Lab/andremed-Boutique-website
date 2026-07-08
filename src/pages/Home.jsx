@@ -828,23 +828,12 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
             {newProducts.map((product) => (
               <motion.div key={product.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} style={styles.newProductCard}>
                 <div style={styles.newProductImageContainer}>
-                  {product.image ? (
-                    <img src={product.image} alt={product.name} style={styles.newProductImage} />
-                  ) : (
-                    <div style={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#0A4D8C',
-                      color: 'white',
-                      fontSize: '2.5rem',
-                      fontWeight: 'bold',
-                    }}>
-                      {product.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                    </div>
-                  )}
+                  <img
+                    src={product.image || product.image_url || '/placeholder.png'}
+                    alt={product.name}
+                    style={styles.newProductImage}
+                    onError={(e) => { e.target.src = '/placeholder.png'; }}
+                  />
                   <div style={styles.newProductBadge}>NEW</div>
                 </div>
                 <h3 style={styles.newProductName}>{product.name}</h3>
@@ -1397,7 +1386,7 @@ ${amountText}💬 Message : ${formData.message || 'Aucun'}
   );
 }
 
-// ========== STYLES COMPLETS ==========
+// ========== STYLES COMPLETS (inchangés) ==========
 const styles = {
   chatButton: {
     position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000,
