@@ -25,15 +25,19 @@ function Blog() {
     fetchProducts();
   }, []);
 
-  // Fonction pour récupérer l'URL de l'image
+  // Fonction robuste pour récupérer l'URL de l'image
   const getImageUrl = (product) => {
-    if (product.image && product.image !== '') return product.image;
-    if (product.image_url && product.image_url !== '') return product.image_url;
+    // 1. image
+    if (product.image && product.image.trim() !== '') return product.image;
+    // 2. image_url
+    if (product.image_url && product.image_url.trim() !== '') return product.image_url;
+    // 3. media (premier élément)
     if (product.media && Array.isArray(product.media) && product.media.length > 0) {
       const first = product.media[0];
       if (typeof first === 'string') return first;
       if (first && first.url) return first.url;
     }
+    // 4. fallback
     return '/placeholder.png';
   };
 
