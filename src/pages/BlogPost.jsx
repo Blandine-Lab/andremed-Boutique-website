@@ -52,10 +52,12 @@ function Blog() {
               >
                 <div style={styles.productImageContainer}>
                   <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    {/* ===== CORRECTION ICI ===== */}
                     <img
-                      src={product.image_url || '/placeholder.png'}
+                      src={product.image || product.image_url || '/placeholder.png'}
                       alt={product.name}
                       style={styles.productImage}
+                      onError={(e) => { e.target.src = '/placeholder.png'; }}
                     />
                     <img
                       src="/logo-andremed.png"
