@@ -38,7 +38,13 @@ function Blog() {
 
   // Fonction pour afficher les initiales du produit
   const getInitials = (name) => {
+    if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
+  // Fonction pour obtenir l'URL de l'image (priorité à image, puis image_url)
+  const getProductImage = (product) => {
+    return product.image || product.image_url || null;
   };
 
   return (
@@ -71,39 +77,47 @@ function Blog() {
               onClick={() => setSelectedProduct(product)}
             >
               <div style={styles.productImageContainer}>
-                {product.image ? (
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    style={styles.productImage}
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      const parent = e.target.parentElement;
-                      parent.style.display = 'flex';
-                      parent.style.alignItems = 'center';
-                      parent.style.justifyContent = 'center';
-                      parent.style.backgroundColor = '#0A4D8C';
-                      parent.style.color = 'white';
-                      parent.style.fontSize = '2rem';
-                      parent.style.fontWeight = 'bold';
-                      parent.innerText = getInitials(product.name);
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#0A4D8C',
-                    color: 'white',
-                    fontSize: '2rem',
-                    fontWeight: 'bold',
-                  }}>
-                    {getInitials(product.name)}
-                  </div>
-                )}
+                {(() => {
+                  const imgSrc = getProductImage(product);
+                  if (imgSrc) {
+                    return (
+                      <img
+                        src={imgSrc}
+                        alt={product.name}
+                        style={styles.productImage}
+                        onError={(e) => {
+                          // Si l'image ne charge pas, on affiche les initiales
+                          e.target.style.display = 'none';
+                          const parent = e.target.parentElement;
+                          parent.style.display = 'flex';
+                          parent.style.alignItems = 'center';
+                          parent.style.justifyContent = 'center';
+                          parent.style.backgroundColor = '#0A4D8C';
+                          parent.style.color = 'white';
+                          parent.style.fontSize = '2rem';
+                          parent.style.fontWeight = 'bold';
+                          parent.innerText = getInitials(product.name);
+                        }}
+                      />
+                    );
+                  } else {
+                    return (
+                      <div style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#0A4D8C',
+                        color: 'white',
+                        fontSize: '2rem',
+                        fontWeight: 'bold',
+                      }}>
+                        {getInitials(product.name)}
+                      </div>
+                    );
+                  }
+                })()}
               </div>
               <h3 style={styles.productName}>{product.name}</h3>
             </motion.div>
@@ -115,30 +129,37 @@ function Blog() {
         <div style={styles.modalOverlay} onClick={closeModal}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <button style={styles.closeButton} onClick={closeModal}>✕</button>
-            {selectedProduct.image ? (
-              <img
-                src={selectedProduct.image}
-                alt={selectedProduct.name}
-                style={styles.modalImage}
-                onError={(e) => { e.target.src = '/placeholder.png'; }}
-              />
-            ) : (
-              <div style={{
-                width: '100%',
-                height: '200px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#0A4D8C',
-                color: 'white',
-                fontSize: '3rem',
-                fontWeight: 'bold',
-                borderRadius: '12px',
-                marginBottom: '1rem',
-              }}>
-                {getInitials(selectedProduct.name)}
-              </div>
-            )}
+            {(() => {
+              const modalImgSrc = getProductImage(selectedProduct);
+              if (modalImgSrc) {
+                return (
+                  <img
+                    src={modalImgSrc}
+                    alt={selectedProduct.name}
+                    style={styles.modalImage}
+                    onError={(e) => { e.target.src = '/placeholder.png'; }}
+                  />
+                );
+              } else {
+                return (
+                  <div style={{
+                    width: '100%',
+                    height: '200px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#0A4D8C',
+                    color: 'white',
+                    fontSize: '3rem',
+                    fontWeight: 'bold',
+                    borderRadius: '12px',
+                    marginBottom: '1rem',
+                  }}>
+                    {getInitials(selectedProduct.name)}
+                  </div>
+                );
+              }
+            })()}
             <h2>{selectedProduct.name}</h2>
             <p style={styles.modalDescription}>{selectedProduct.description || 'Aucune description disponible.'}</p>
             {selectedProduct.price && <p><strong>Prix :</strong> {selectedProduct.price} €</p>}
